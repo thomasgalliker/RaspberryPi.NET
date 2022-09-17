@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32901.215
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaspberryPi.NET", "RaspberryPi.NET\RaspberryPi.NET.csproj", "{A100D32A-712B-4FE2-B36A-8B187294F3CF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A100D32A-712B-4FE2-B36A-8B187294F3CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A100D32A-712B-4FE2-B36A-8B187294F3CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A100D32A-712B-4FE2-B36A-8B187294F3CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A100D32A-712B-4FE2-B36A-8B187294F3CF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BD3823A2-9A49-4258-BE1E-1E018B6DDFC9}
+	EndGlobalSection
+EndGlobal
