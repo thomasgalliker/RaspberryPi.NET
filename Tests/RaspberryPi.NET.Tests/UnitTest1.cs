@@ -8,6 +8,7 @@ namespace RaspberryPi.NET.Tests
         public void Test1()
         {
             // TODO Do some test...
+            var class1 = new Class1();
         }
     }
 }
