@@ -3,7 +3,22 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaspberryPi.NET", "RaspberryPi.NET\RaspberryPi.NET.csproj", "{A100D32A-712B-4FE2-B36A-8B187294F3CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RaspberryPi.NET", "RaspberryPi.NET\RaspberryPi.NET.csproj", "{A100D32A-712B-4FE2-B36A-8B187294F3CF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F57CBF2B-18AC-4ED9-83E9-7A6354D5A694}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		azure-pipelines.yml = azure-pipelines.yml
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BD0B04F8-31B0-44DE-B1A7-0E95856B61A6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RaspberryPi.NET.Tests", "Tests\RaspberryPi.NET.Tests\RaspberryPi.NET.Tests.csproj", "{0C13D236-9D7E-4224-9192-5B6277909D8F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{195E906F-2CB7-41A9-9718-E2AE96483323}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RaspberryPi.ConsoleApp", "Samples\RaspberryPi.ConsoleApp\RaspberryPi.ConsoleApp.csproj", "{D4E4E3EA-7657-4B94-B461-4DF437B0BE76}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +30,21 @@ Global
 		{A100D32A-712B-4FE2-B36A-8B187294F3CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A100D32A-712B-4FE2-B36A-8B187294F3CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A100D32A-712B-4FE2-B36A-8B187294F3CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C13D236-9D7E-4224-9192-5B6277909D8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C13D236-9D7E-4224-9192-5B6277909D8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C13D236-9D7E-4224-9192-5B6277909D8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C13D236-9D7E-4224-9192-5B6277909D8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4E4E3EA-7657-4B94-B461-4DF437B0BE76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4E4E3EA-7657-4B94-B461-4DF437B0BE76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4E4E3EA-7657-4B94-B461-4DF437B0BE76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4E4E3EA-7657-4B94-B461-4DF437B0BE76}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0C13D236-9D7E-4224-9192-5B6277909D8F} = {BD0B04F8-31B0-44DE-B1A7-0E95856B61A6}
+		{D4E4E3EA-7657-4B94-B461-4DF437B0BE76} = {195E906F-2CB7-41A9-9718-E2AE96483323}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BD3823A2-9A49-4258-BE1E-1E018B6DDFC9}
