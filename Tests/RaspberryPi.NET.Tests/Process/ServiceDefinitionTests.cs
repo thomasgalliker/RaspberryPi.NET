@@ -9,13 +9,14 @@ namespace RaspberryPi.Tests.Process
     {
         [Theory]
         [ClassData(typeof(CommandLineInvocationInvalidTestData))]
-        public void ShouldCreateCommandLineInvocation_ThrowsArgumentException(string commandLine)
+        public void ShouldCreateCommandLineInvocation_ThrowsArgumentException(string commandLine, Type expectedExceptionType)
         {
             // Act
             Action action = () => new CommandLineInvocation(commandLine);
 
             // Assert
-            action.Should().Throw<ArgumentException>();
+            var ex = action.Should().Throw<Exception>().Which;
+            ex.Should().BeOfType(expectedExceptionType);
         }
 
         public class CommandLineInvocationInvalidTestData : TheoryData<string, Type>
