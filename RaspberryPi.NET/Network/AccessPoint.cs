@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using RaspberryPi.Model;
 using RaspberryPi.Services;
 using RaspberryPi.Storage;
 
@@ -93,21 +94,45 @@ namespace RaspberryPi.Network
         }
 
         /// <summary>
-        /// Configure access point mode
+        /// Configure this devices as access point.
         /// </summary>
-        /// <param name="ssid">SSID to use</param>
-        /// <param name="psk">Password to use</param>
-        /// <param name="ipAddress">IP address</param>
-        /// <param name="channel">Optional channel number</param>
+        /// <param name="ssid">SSID to use.</param>
+        /// <param name="psk">Password to use.</param>
+        /// <param name="ipAddress">IP address.</param>
+        /// <param name="channel">The wifi channel number. Automatically selected if null.</param>
+        /// <param name="country">The country in which this access point operates. If null, country code is read from wifi configuration.</param>
         /// <returns></returns>
-        public async Task ConfigureAsync(string ssid, string psk, IPAddress ipAddress, int? channel = null)
+        public async Task ConfigureAsync(string ssid, string psk, IPAddress ipAddress, int? channel = null, Country country = null)
         {
-            this.logger.LogDebug($"ConfigureAsync: ssid={ssid}");
-            var countryCode = await this.wpa.GetCountryCode();
+            if (string.IsNullOrEmpty(ssid))
+            {
+                throw new ArgumentNullException(nameof(ssid), $"Parameter {nameof(ssid)} must not be null or empty.");
+            }
+
+            if (string.IsNullOrEmpty(psk))
+            {
+                throw new ArgumentNullException(nameof(psk), $"Parameter {nameof(psk)} must not be null or empty.");
+            }
+
+            if (ipAddress == null)
+            {
+                throw new ArgumentNullException(nameof(ipAddress), $"Parameter {nameof(ipAddress)} must not be null.");
+            }
+
+            string countryCode;
+
+            if (country != null)
+            {
+                countryCode = country.Alpha2;
+            }
+            else
+            {
+                countryCode = await this.wpa.GetCountryCode();
+            }
 
             if (string.IsNullOrWhiteSpace(countryCode))
             {
-                throw new InvalidOperationException("Cannot configure access point because no country code has been set.");
+                throw new ArgumentNullException(nameof(country), "Cannot configure access point because no country code has been set.");
             }
 
             var channelString = $"{channel}";
@@ -115,6 +140,8 @@ namespace RaspberryPi.Network
             {
                 channelString = DefaultChannel;
             }
+
+            this.logger.LogDebug($"ConfigureAsync: ssid={ssid}, psk={{suppressed}}, ipAddress={ipAddress}, channel={channelString}, country={countryCode}");
 
             if (ssid == "*")
             {
@@ -140,7 +167,7 @@ namespace RaspberryPi.Network
             }
             else
             {
-                // Write hostapd config
+                this.logger.LogDebug($"ConfigureAsync: Writing hostapd config --> {HostapdWlan0ConfFilePath}...");
                 using (var hostapdTemplateStream = Configurations.GetHostapdTemplateStream())
                 {
                     using var reader = new StreamReader(hostapdTemplateStream);
@@ -157,7 +184,7 @@ namespace RaspberryPi.Network
                     }
                 }
 
-                // Write dnsmasq config
+                this.logger.LogDebug($"ConfigureAsync: Writing dnsmasq config --> {HostapdWlan0ConfFilePath}...");
                 using (var dnsmasqTemplateStream = Configurations.GetDnsmasqTemplateStream())
                 {
                     using var reader = new StreamReader(dnsmasqTemplateStream);
@@ -177,7 +204,7 @@ namespace RaspberryPi.Network
                     }
                 }
 
-                // Set IP address configuration for AP mode
+                this.logger.LogDebug($"ConfigureAsync: Set IP address configuration for AP mode");
                 await this.dhcp.SetIPAddressAsync(InterfaceName, ipAddress, null, null, null, true);
 
                 this.logger.LogDebug($"ConfigureAsync for ssid={ssid} finished successfully");

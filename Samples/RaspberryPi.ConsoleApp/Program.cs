@@ -1,4 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Globalization;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RaspberryPi;
@@ -22,10 +24,16 @@ internal partial class Program
         // This sample console app runs with Microsoft.Extensions.DependencyInjection.
         // However, you can also manually construct the dependency trees if you wish so.
         var serviceCollection = new ServiceCollection();
+
+        var dateTimeFormat = CultureInfo.CurrentCulture.DateTimeFormat;
         serviceCollection.AddLogging(o =>
         {
             o.ClearProviders();
-            o.AddConsole();
+            o.SetMinimumLevel(LogLevel.Debug);
+            o.AddSimpleConsole(c =>
+            {
+                c.TimestampFormat = $"{dateTimeFormat.ShortDatePattern} {dateTimeFormat.LongTimePattern} ";
+            });
         });
         serviceCollection.AddRaspberryPi();
         var serviceProvider = serviceCollection.BuildServiceProvider();

@@ -7,6 +7,7 @@ using System.Net.NetworkInformation;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using RaspberryPi.Process;
 using RaspberryPi.Services;
 using RaspberryPi.Storage;
@@ -20,18 +21,6 @@ namespace RaspberryPi.Network
     {
         internal const string DhcpdService = "dhcpcd.service";
         internal const string DhcpdConfFilePath = "/etc/dhcpcd.conf";
-
-        public DHCP(
-            IProcessRunner processRunner,
-            ISystemCtl systemCtl,
-            IFileSystem fileSystem,
-            INetworkInterfaceService networkInterface)
-        {
-            this.processRunner = processRunner;
-            this.systemCtl = systemCtl;
-            this.fileSystem = fileSystem;
-            this.networkInterface = networkInterface;
-        }
 
         /// <summary>
         /// Regex to capture the interface name
@@ -58,10 +47,25 @@ namespace RaspberryPi.Network
         /// </summary>
         private static readonly Regex ApModeRegex = new(@"^\s*nohook\s+wpa_supplicant");
 
+        private readonly ILogger<DHCP> logger;
         private readonly IProcessRunner processRunner;
         private readonly ISystemCtl systemCtl;
         private readonly IFileSystem fileSystem;
         private readonly INetworkInterfaceService networkInterface;
+
+        public DHCP(
+            ILogger<DHCP> logger,
+            IProcessRunner processRunner,
+            ISystemCtl systemCtl,
+            IFileSystem fileSystem,
+            INetworkInterfaceService networkInterface)
+        {
+            this.logger = logger;
+            this.processRunner = processRunner;
+            this.systemCtl = systemCtl;
+            this.fileSystem = fileSystem;
+            this.networkInterface = networkInterface;
+        }
 
         /// <summary>
         /// Private class representing the IP address configuration as saved in the dhcpcd config
@@ -150,6 +154,8 @@ namespace RaspberryPi.Network
         /// <returns>Asynchronous task</returns>
         public async Task SetIPAddressAsync(string iface, IPAddress ip, IPAddress netmask, IPAddress gateway, IPAddress dnsServer, bool? forAP = null)
         {
+            this.logger.LogDebug($"SetIPAddressAsync: iface={iface}, ip={ip}, netmask={netmask}, gateway={gateway}, dnsServer={dnsServer}, forAP={forAP}");
+
             // Check if the profile already exists and if anything is supposed to change
             var profiles = await this.ReadProfiles();
             IPConfig existingProfile = null;

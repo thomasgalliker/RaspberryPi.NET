@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Threading.Tasks;
+using RaspberryPi.Model;
 
 namespace RaspberryPi.Network
 {
@@ -12,7 +13,7 @@ namespace RaspberryPi.Network
         /// <param name="psk">WPA pre-shared keys for WPA-PSK.</param>
         /// <param name="ipAddress">The IP address to be used for this access point.</param>
         /// <param name="channel">Channel number (IEEE 802.11).</param>
-        Task ConfigureAsync(string ssid, string psk, IPAddress ipAddress, int? channel = null);
+        Task ConfigureAsync(string ssid, string psk, IPAddress ipAddress, int? channel = null, Country country = null);
 
         bool IsEnabled();
 
