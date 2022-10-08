@@ -54,6 +54,16 @@ namespace RaspberryPi.Services
             return this.RunServiceCommand("disable", serviceName);
         }
 
+        public bool MaskService(string serviceName)
+        {
+            return this.RunServiceCommand("mask", serviceName);
+        }
+
+        public bool UnmaskService(string serviceName)
+        {
+            return this.RunServiceCommand("unmask", serviceName);
+        }
+
         private bool RunServiceCommand(string command, string serviceName)
         {
             var systemCtlCommand = $"sudo systemctl {command} {serviceName}";
