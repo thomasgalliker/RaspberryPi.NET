@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -10,8 +11,12 @@ internal partial class Program
 {
     private static int Main(string[] args)
     {
+        var assemblyVersion = Assembly.GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            .InformationalVersion;
+
         Console.WriteLine(
-            $"RaspberryPi.ConsoleApp version {typeof(Program).Assembly.GetName().Version} {Environment.NewLine}" +
+            $"RaspberryPi.ConsoleApp version {assemblyVersion} {Environment.NewLine}" +
             $"Copyright(C) superdev GmbH. All rights reserved.{Environment.NewLine}");
 
         var osplatform = RuntimeInformationHelper.GetOperatingSystem();

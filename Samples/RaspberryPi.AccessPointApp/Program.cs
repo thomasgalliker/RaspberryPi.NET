@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,8 +17,12 @@ namespace RaspberryPi.AccessPointApp
     {
         private static async Task<int> Main(string[] args)
         {
+            var assemblyVersion = Assembly.GetExecutingAssembly()
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                .InformationalVersion;
+
             Console.WriteLine(
-                $"RaspberryPi.AccessPointApp version {typeof(Program).Assembly.GetName().Version} {Environment.NewLine}" +
+                $"RaspberryPi.AccessPointApp version {assemblyVersion} {Environment.NewLine}" +
                 $"Copyright(C) superdev GmbH. All rights reserved.{Environment.NewLine}");
 
             var osplatform = RuntimeInformationHelper.GetOperatingSystem();
