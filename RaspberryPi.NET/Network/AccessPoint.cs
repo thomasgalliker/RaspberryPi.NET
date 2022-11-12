@@ -241,6 +241,13 @@ namespace RaspberryPi.Network
             this.logger.LogDebug($"ConfigureAsync: ssid={ssid}, psk={{suppressed}}, ipAddress={ipAddress}, channel={channelString}, country={countryCode}");
 
             this.logger.LogDebug($"ConfigureAsync: Writing dnsmasq config --> {DnsmasqConfFilePath}...");
+
+            var dnsmasqConfDir = Path.GetDirectoryName(DnsmasqConfFilePath);
+            if (!this.fileSystem.Directory.Exists(dnsmasqConfDir))
+            {
+                this.fileSystem.Directory.CreateDirectory(dnsmasqConfDir);
+            }
+
             using (var dnsmasqTemplateStream = Configurations.GetDnsmasqTemplateStream())
             {
                 using var reader = new StreamReader(dnsmasqTemplateStream);
@@ -263,6 +270,13 @@ namespace RaspberryPi.Network
             this.processRunner.ExecuteCommand("sudo rfkill unblock wlan");
 
             this.logger.LogDebug($"ConfigureAsync: Writing hostapd config --> {HostapdConfFilePath}...");
+
+            var hostapdConfDir = Path.GetDirectoryName(HostapdConfFilePath);
+            if (!this.fileSystem.Directory.Exists(hostapdConfDir))
+            {
+                this.fileSystem.Directory.CreateDirectory(hostapdConfDir);
+            }
+
             using (var hostapdTemplateStream = Configurations.GetHostapdTemplateStream())
             {
                 using var reader = new StreamReader(hostapdTemplateStream);

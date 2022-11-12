@@ -32,6 +32,10 @@ namespace RaspberryPi.Tests.Network
             this.autoMocker.Use<ILogger<AccessPoint>>(new TestOutputHelperLogger<AccessPoint>(testOutputHelper));
 
             var fileSystemMock = this.autoMocker.GetMock<IFileSystem>();
+            fileSystemMock.Setup(f => f.Directory.Exists(Path.GetDirectoryName(AccessPoint.HostapdConfFilePath)))
+                .Returns(true);
+            fileSystemMock.Setup(f => f.Directory.Exists(Path.GetDirectoryName(AccessPoint.DnsmasqConfFilePath)))
+                .Returns(true);
             fileSystemMock.Setup(f => f.File.Exists("/bin/bash"))
                 .Returns(true);
 
@@ -124,6 +128,8 @@ namespace RaspberryPi.Tests.Network
             // Assert
             fileSystemMock.Verify(f => f.FileStreamFactory.CreateStreamWriter(AccessPoint.HostapdConfFilePath, FileMode.Create, FileAccess.Write), Times.Once);
             fileSystemMock.Verify(f => f.FileStreamFactory.CreateStreamWriter(AccessPoint.DnsmasqConfFilePath, FileMode.Create, FileAccess.Write), Times.Once);
+            fileSystemMock.Verify(f => f.Directory.Exists(@"\etc"), Times.Once);
+            fileSystemMock.Verify(f => f.Directory.Exists(@"\etc\hostapd"), Times.Once);
             fileSystemMock.VerifyNoOtherCalls();
 
             processRunnerMock.Verify(p => p.ExecuteCommand("sudo rfkill unblock wlan", It.IsAny<CancellationToken>()), Times.Once);
@@ -152,7 +158,6 @@ namespace RaspberryPi.Tests.Network
             dnsmasqStreamWriterMock.Verify(a => a.WriteLineAsync("dhcp-range=192.168.50.151,192.168.50.200,255.255.255.0,24h"), Times.Once);
             dnsmasqStreamWriterMock.Verify(a => a.WriteLineAsync("dhcp-option=option:dns-server,192.168.50.100"), Times.Once);
         }
-
 
         [Fact]
         public void ShouldGetConnectedClients()

@@ -36,6 +36,7 @@ namespace RaspberryPi.Tests.Network
             this.autoMocker.Use<ILogger<AccessPoint>>(new TestOutputHelperLogger<AccessPoint>(testOutputHelper));
 
             var rootPath = Path.GetFullPath(".");
+            System.IO.Directory.CreateDirectory(Path.Combine(rootPath, "etc"));
             this.autoMocker.Use<IFileSystem>(new FileSystem(new TestFile(rootPath), new TestDirectory(rootPath), new TestFileStreamFactory(rootPath)));
             this.autoMocker.Use<IProcessRunner>(this.autoMocker.CreateInstance<NullProcessRunner>());
             this.autoMocker.Use<IDHCP>(this.autoMocker.CreateInstance<DHCP>());

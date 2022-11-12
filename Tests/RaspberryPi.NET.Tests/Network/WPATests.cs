@@ -149,7 +149,7 @@ namespace RaspberryPi.Tests.Network
             fileSystemMock.SetupSequence(f => f.FileStreamFactory.Create(WPA.WpaSupplicantConfFilePath, FileMode.Open, FileAccess.Read))
                 .Returns(() => wpaSupplicantConfMemoryStreamInput.Rewind())
                 .Returns(() => wpaSupplicantConfMemoryStreamOutput.Rewind());
-            fileSystemMock.Setup(f => f.FileStreamFactory.Create(WPA.WpaSupplicantConfFilePath, FileMode.CreateNew, FileAccess.Write))
+            fileSystemMock.Setup(f => f.FileStreamFactory.Create(WPA.WpaSupplicantConfFilePath, FileMode.Create, FileAccess.Write))
                 .Returns(() => wpaSupplicantConfMemoryStreamOutput);
 
 
@@ -208,7 +208,7 @@ namespace RaspberryPi.Tests.Network
             var wpaSupplicantConfStream = new StringBuilderStream("");
             fileSystemMock.Setup(f => f.FileStreamFactory.Create(WPA.WpaSupplicantConfFilePath, FileMode.Open, FileAccess.Read))
                 .Returns(() => wpaSupplicantConfStream);
-            fileSystemMock.Setup(f => f.FileStreamFactory.Create(WPA.WpaSupplicantConfFilePath, FileMode.CreateNew, FileAccess.Write))
+            fileSystemMock.Setup(f => f.FileStreamFactory.Create(WPA.WpaSupplicantConfFilePath, FileMode.Create, FileAccess.Write))
                 .Returns(() => wpaSupplicantConfStream);
 
             var processRunnerMock = this.autoMocker.GetMock<IProcessRunner>();
@@ -258,7 +258,7 @@ namespace RaspberryPi.Tests.Network
             var wpaSupplicantConfStream = new StringBuilderStream(Files.GetWPASupplicantConf_Example1_Stream());
             fileSystemMock.Setup(f => f.FileStreamFactory.Create(WPA.WpaSupplicantConfFilePath, FileMode.Open, FileAccess.Read))
                 .Returns(() => wpaSupplicantConfStream);
-            fileSystemMock.Setup(f => f.FileStreamFactory.Create(WPA.WpaSupplicantConfFilePath, FileMode.CreateNew, FileAccess.Write))
+            fileSystemMock.Setup(f => f.FileStreamFactory.Create(WPA.WpaSupplicantConfFilePath, FileMode.Create, FileAccess.Write))
                 .Returns(() => wpaSupplicantConfStream);
 
             var processRunnerMock = this.autoMocker.GetMock<IProcessRunner>();

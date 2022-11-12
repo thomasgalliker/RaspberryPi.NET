@@ -221,10 +221,9 @@ namespace RaspberryPi.Network
 
             // Source: https://github.com/snowdayclub/rpi-wifisetup-ble/blob/5bc236a90fa6c8ccaebef845d62c526fa2b487d2/wpamanager.py
 
-            var wpaSupplicantDir = Path.GetDirectoryName(WpaSupplicantConfFilePath);
-            if (!this.fileSystem.Directory.Exists(wpaSupplicantDir))
+            if (!this.fileSystem.File.Exists(WpaSupplicantConfFilePath))
             {
-                this.fileSystem.Directory.CreateDirectory(wpaSupplicantDir);
+                return null;
             }
 
             var conf = new WPASupplicantConf();
@@ -358,7 +357,7 @@ namespace RaspberryPi.Network
                 this.fileSystem.File.Delete(WpaSupplicantConfFilePath);
             }
 
-            using var configStream = this.fileSystem.FileStreamFactory.Create(WpaSupplicantConfFilePath, FileMode.CreateNew, FileAccess.Write);
+            using var configStream = this.fileSystem.FileStreamFactory.Create(WpaSupplicantConfFilePath, FileMode.Create, FileAccess.Write);
             {
                 using var writer = new StreamWriter(configStream, Encodings.UTF8EncodingWithoutBOM, FileBufferSize, leaveOpen: true);
                 {
@@ -435,7 +434,7 @@ namespace RaspberryPi.Network
             }
 
             this.processRunner.ExecuteCommand($"sudo chmod 600 {WpaSupplicantConfFilePath}");
-            
+
             this.processRunner.ExecuteCommand($"sudo rfkill unblock wifi");
 
             // Restart the service to apply the new configuration
@@ -447,6 +446,8 @@ namespace RaspberryPi.Network
         public async Task<WPASupplicantNetwork> GetNetworkAsync(string ssid)
         {
             var conf = await this.GetConfigAsync();
+            conf ??= new WPASupplicantConf();
+
             var network = conf.Networks.SingleOrDefault(n => n.SSID == ssid);
             return network;
         }
@@ -457,6 +458,7 @@ namespace RaspberryPi.Network
             this.logger.LogDebug($"AddOrUpdateNetworkAsync: ssid={network.SSID}");
 
             var conf = await this.GetConfigAsync();
+            conf ??= new WPASupplicantConf();
 
             var existingNetwork = conf.Networks.SingleOrDefault(n => n.SSID == network.SSID);
             if (existingNetwork != null)
@@ -475,6 +477,7 @@ namespace RaspberryPi.Network
             this.logger.LogDebug($"RemoveNetworkAsync: ssid={network.SSID}");
 
             var conf = await this.GetConfigAsync();
+            conf ??= new WPASupplicantConf();
 
             var existingNetwork = conf.Networks.SingleOrDefault(n => n.SSID == network.SSID);
             if (existingNetwork == null)
