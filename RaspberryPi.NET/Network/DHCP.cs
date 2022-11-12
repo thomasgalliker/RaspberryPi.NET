@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using RaspberryPi.Extensions;
 using RaspberryPi.Internals;
 using RaspberryPi.Services;
 using RaspberryPi.Storage;
@@ -314,7 +315,7 @@ namespace RaspberryPi.Network
                         await writer.WriteLineAsync($"interface {iface.Name}");
                         if (ip != null)
                         {
-                            var cidr = subnetMask != null ? CalculateCIDR(subnetMask) : DefaultCIDR;
+                            var cidr = subnetMask != null ? subnetMask.CalculateCIDR() : DefaultCIDR;
                             await writer.WriteLineAsync($"static ip_address={ip}/{cidr}");
                             if (forAP)
                             {
@@ -383,30 +384,6 @@ namespace RaspberryPi.Network
 
             newConfigStream.Seek(0, SeekOrigin.Begin);
             await newConfigStream.CopyToAsync(configStream);
-        }
-
-        private static int? CalculateCIDR(IPAddress subnet)
-        {
-            int? cidr = null;
-
-            if (subnet != null)
-            {
-                var subnetMask = BitConverter.ToUInt32(subnet.GetAddressBytes(), 0);
-                for (var i = 0; i < 32; i++)
-                {
-                    if ((subnetMask & (1u << i)) != 0)
-                    {
-                        cidr ??= 0;
-                        cidr++;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-
-            return cidr;
         }
 
         /// <inheritdoc/>

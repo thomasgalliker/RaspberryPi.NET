@@ -65,7 +65,7 @@ namespace RaspberryPi.Network
 
             await this.wpa.AddOrUpdateNetworkAsync(network);
 
-            await this.dhcp.SetIPAddressAsync(iface, null, null, null, null);
+            await this.dhcp.SetIPAddressAsync(iface, null, null, null, null, null);
 
             // No longer in AP mode
             this.accessPoint.Stop();
