@@ -16,13 +16,13 @@ namespace RaspberryPi.Tests.Utils
         public StringBuilderStream() : this(new StringBuilder())
         {
         }
-        
-        public StringBuilderStream(string content) : this(new StringBuilder(content))
+
+        public StringBuilderStream(Stream stream)
+            : this(stream.GetText())
         {
         }
 
-        public StringBuilderStream(Stream stream) 
-            : this(new StringBuilder(stream.GetText()))
+        public StringBuilderStream(string content) : this(new StringBuilder(content))
         {
         }
 
@@ -30,13 +30,14 @@ namespace RaspberryPi.Tests.Utils
         {
             this.stringBuilder = stringBuilder;
 
-            // Copy the old result into the current buffer.
+            // Copy the input stream into the current buffer
             var writer = new StreamWriter(this.buffer);
             writer.Write(stringBuilder.ToString());
             writer.Flush();
+
             this.buffer.Position = 0;
 
-            this.bufferReader = new StreamReader(this.buffer, true);
+            this.bufferReader = new StreamReader(this.buffer, detectEncodingFromByteOrderMarks: true);
         }
 
         public override bool CanRead => true;
@@ -62,7 +63,6 @@ namespace RaspberryPi.Tests.Utils
                 this.stringBuilder.Append(this.bufferReader.ReadToEnd());
                 this.buffer.SetLength(0);
             }
-
         }
 
         public override long Seek(long offset, SeekOrigin origin)
