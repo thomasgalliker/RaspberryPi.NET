@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace RaspberryPi.Model
+namespace RaspberryPi
 {
     public static class Countries
     {
@@ -40,7 +40,7 @@ namespace RaspberryPi.Model
             Alpha3 = "AFG",
             NumericCode = 4
         };
-        
+
         public static readonly Country ÅlandIslands = new Country
         {
             Name = "Åland Islands",
@@ -48,7 +48,7 @@ namespace RaspberryPi.Model
             Alpha3 = "ALA",
             NumericCode = 248
         };
-        
+
         public static readonly Country Albania = new Country
         {
             Name = "Albania",
@@ -56,7 +56,7 @@ namespace RaspberryPi.Model
             Alpha3 = "ALB",
             NumericCode = 8
         };
-        
+
         public static readonly Country Algeria = new Country
         {
             Name = "Algeria",
@@ -64,7 +64,7 @@ namespace RaspberryPi.Model
             Alpha3 = "DZA",
             NumericCode = 12
         };
-        
+
         public static readonly Country Switzerland = new Country
         {
             Name = "Switzerland",

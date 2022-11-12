@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using RaspberryPi.Process;
-using RaspberryPi.Storage;
 
 namespace RaspberryPi
 {
@@ -26,14 +23,11 @@ namespace RaspberryPi
         private static readonly Regex RandomAccessMemoryPattern = new Regex(@"Mem:\s*(?<total>\d*)\s*(?<used>\d*)\s*(?<free>\d*)\s*(?<shared>\d*)\s*(?<buffers>\d*)\s*(?<cache>\d*)\s*(?<available>\d*)\s*.*$");
         private static readonly Regex SwapMemoryPattern = new Regex(@"Swap:\s*(?<total>\d*)\s*(?<used>\d*)\s*(?<free>\d*)\s*.*$");
 
-        private readonly IFileSystem fileSystem;
         private readonly IProcessRunner processRunner;
 
         public SystemInfoService(
-            IFileSystem fileSystem,
             IProcessRunner processRunner)
         {
-            this.fileSystem = fileSystem;
             this.processRunner = processRunner;
         }
 
@@ -56,7 +50,7 @@ namespace RaspberryPi
             var commandLineResult = this.processRunner.ExecuteCommand("hostnamectl");
 
             using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(commandLineResult.OutputData));
-            using var reader = new StreamReader(memoryStream);
+            using var reader = new StreamReader(memoryStream); // TODO: Use StringReader instead!
 
             while (!reader.EndOfStream)
             {

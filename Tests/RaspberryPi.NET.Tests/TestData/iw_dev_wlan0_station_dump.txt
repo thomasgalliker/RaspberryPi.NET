@@ -1,0 +1,57 @@
+Station 08:6a:c5:4c:ff:cc (on wlan0)
+        inactive time:  0 ms
+        rx bytes:       68046
+        rx packets:     314
+        tx bytes:       141014
+        tx packets:     656
+        tx failed:      0
+        tx bitrate:     72.2 MBit/s
+        rx bitrate:     72.2 MBit/s
+        authorized:     yes
+        authenticated:  yes
+        associated:     yes
+        WMM/WME:        yes
+        TDLS peer:      no
+        DTIM period:    2
+        beacon interval:100
+        short slot time:yes
+        connected time: 58 seconds
+        current time:   364605073 ms
+Station fe:38:d8:44:7a:1e (on wlan0)
+        inactive time:  1000 ms
+        rx bytes:       65312
+        rx packets:     1057
+        tx bytes:       152322
+        tx packets:     800
+        tx failed:      6
+        tx bitrate:     65.0 MBit/s
+        rx bitrate:     1.0 MBit/s
+        authorized:     yes
+        authenticated:  yes
+        associated:     yes
+        WMM/WME:        yes
+        TDLS peer:      no
+        DTIM period:    2
+        beacon interval:100
+        short slot time:yes
+        connected time: 183 seconds
+        current time:   364605074 ms
+Station ce:d5:49:3c:be:9f (on wlan0)
+        inactive time:  1000 ms
+        rx bytes:       133703
+        rx packets:     1733
+        tx bytes:       134013
+        tx packets:     597
+        tx failed:      7
+        tx bitrate:     65.0 MBit/s
+        rx bitrate:     24.0 MBit/s
+        authorized:     yes
+        authenticated:  yes
+        associated:     yes
+        WMM/WME:        yes
+        TDLS peer:      no
+        DTIM period:    2
+        beacon interval:100
+        short slot time:yes
+        connected time: 309 seconds
+        current time:   364605075 ms

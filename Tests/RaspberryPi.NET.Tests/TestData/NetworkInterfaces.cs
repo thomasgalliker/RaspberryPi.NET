@@ -7,21 +7,31 @@ namespace RaspberryPi.Tests.TestData
 {
     internal static class NetworkInterfaces
     {
+        internal static Mock<INetworkInterface> GetNetworkInterfaceMock(string name)
+        {
+            var networkInterfaceMock = new Mock<INetworkInterface>();
+            networkInterfaceMock.SetupGet(i => i.Name)
+                .Returns(name);
+            networkInterfaceMock.SetupGet(i => i.OperationalStatus)
+                .Returns(OperationalStatus.Up);
+
+            return networkInterfaceMock;
+        }
+        
+        internal static Mock<INetworkInterface> GetWlan0()
+        {
+            return GetNetworkInterfaceMock("wlan0");
+        }
+        
+        internal static Mock<INetworkInterface> GetEth0()
+        {
+            return GetNetworkInterfaceMock("eth0");
+        }
+
         internal static IEnumerable<Mock<INetworkInterface>> GetNetworkInterfaceMocks()
         {
-            var networkInterfaceWlan0 = new Mock<INetworkInterface>();
-            networkInterfaceWlan0.SetupGet(i => i.Name)
-                .Returns("wlan0");
-            networkInterfaceWlan0.SetupGet(i => i.OperationalStatus)
-                .Returns(OperationalStatus.Up);
-            yield return networkInterfaceWlan0;
-
-            var networkInterfaceEth0 = new Mock<INetworkInterface>();
-            networkInterfaceEth0.SetupGet(i => i.Name)
-                .Returns("eth0");
-            networkInterfaceEth0.SetupGet(i => i.OperationalStatus)
-                .Returns(OperationalStatus.Up);
-            yield return networkInterfaceEth0;
+            yield return GetWlan0();
+            yield return GetEth0();
         }
     }
 }

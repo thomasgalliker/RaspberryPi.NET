@@ -2,13 +2,16 @@
 {
     public class FileSystem : IFileSystem
     {
-        public FileSystem()
+        public FileSystem(IFile file, IDirectory directory, IFileStreamFactory fileStreamFactory)
         {
-            this.FileStreamFactory = new FileStreamFactory();
-            this.File = new File();
+            this.File = file;
+            this.Directory = directory;
+            this.FileStreamFactory = fileStreamFactory;
         }
 
         public IFile File { get; }
+
+        public IDirectory Directory { get; }
 
         public IFileStreamFactory FileStreamFactory { get; }
     }

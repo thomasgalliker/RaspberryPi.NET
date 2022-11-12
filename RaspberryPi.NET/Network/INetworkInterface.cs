@@ -7,6 +7,7 @@ namespace RaspberryPi.Network
         public string Name { get; }
 
         public OperationalStatus OperationalStatus { get; }
+        NetworkInterfaceType NetworkInterfaceType { get; }
 
         IPInterfaceProperties GetIPProperties();
     }

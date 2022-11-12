@@ -46,11 +46,15 @@
 	<ItemGroup>
 		<None Remove="Network\Configurations\dnsmasq.conf" />
 		<None Remove="Network\Configurations\hostapd.conf" />
+		<None Remove="Network\Configurations\hostapd.original.conf" />
 	</ItemGroup>
 	
 	<ItemGroup>
 		<EmbeddedResource Include="Network\Configurations\dnsmasq.conf">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Network\Configurations\hostapd.original.conf">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</EmbeddedResource>
 		<EmbeddedResource Include="Network\Configurations\hostapd.conf">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>

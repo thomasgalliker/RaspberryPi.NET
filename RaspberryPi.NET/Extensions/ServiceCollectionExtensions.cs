@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using System.Runtime.InteropServices;
+using Microsoft.Extensions.DependencyInjection;
 using RaspberryPi.Network;
 using RaspberryPi.Process;
 using RaspberryPi.Services;
@@ -15,10 +17,27 @@ namespace RaspberryPi.Extensions
         /// <param name="services"></param>
         public static void AddRaspberryPi(this IServiceCollection services)
         {
-            services.AddSingleton<IProcessRunner, ProcessRunner>();
+            var osplatform = RuntimeInformationHelper.GetOperatingSystem();
+            if (osplatform == OSPlatform.Linux)
+            {
+                services.AddSingleton<IProcessRunner, ProcessRunner>();
+            }
+#if DEBUG
+            else if (osplatform == OSPlatform.Windows)
+            {
+                services.AddSingleton<IProcessRunner, NullProcessRunner>();
+            }
+#endif
+            else
+            {
+                throw new NotSupportedException($"This library only runs on RaspberryPi. OSPlatform \"{osplatform}\" is not supported.");
+            }
+
             services.AddSingleton<IJournalctl, Journalctl>();
 
             // Network
+            services.AddSingleton<INetworkManager, NetworkManager>();
+            services.AddSingleton<IInterface, Interface>();
             services.AddSingleton<IAccessPoint, AccessPoint>();
             services.AddSingleton<IDHCP, DHCP>();
             services.AddSingleton<IWPA, WPA>();
@@ -29,6 +48,9 @@ namespace RaspberryPi.Extensions
             services.AddSingleton<ISystemCtl, SystemCtl>();
 
             // Storage
+            services.AddSingleton<IFile, File>();
+            services.AddSingleton<IDirectory, Directory>();
+            services.AddSingleton<IFileStreamFactory, FileStreamFactory>();
             services.AddSingleton<IFileSystem, FileSystem>();
 
             // System

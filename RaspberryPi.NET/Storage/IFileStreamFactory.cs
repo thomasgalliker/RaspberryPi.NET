@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text;
 
 namespace RaspberryPi.Storage
 {
@@ -16,6 +17,9 @@ namespace RaspberryPi.Storage
 
         /// <inheritdoc cref="StreamWriter(string,FileMode,FileAccess)" />
         StreamWriter CreateStreamWriter(string path, FileMode mode, FileAccess access);
+
+        /// <inheritdoc cref="StreamWriter(Stream,Encoding,int,bool)" />
+        StreamWriter CreateStreamWriter(Stream stream, Encoding encoding, int bufferSize, bool leaveOpen);
 
         /// <inheritdoc cref="FileStream(string,FileMode,FileAccess,FileShare)" />
         Stream Create(string path, FileMode mode, FileAccess access, FileShare share);

@@ -2,6 +2,8 @@
 {
     public class CommandLineResult
     {
+        public static readonly CommandLineResult SuccessResult = new CommandLineResult(SuccessExitCode);
+
         private const int SuccessExitCode = 0;
 
         public CommandLineResult(int exitCode) : this(exitCode, null, null)

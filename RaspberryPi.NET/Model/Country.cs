@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace RaspberryPi.Model
+namespace RaspberryPi
 {
     /// <summary>
     ///     Representation of an ISO3166-1 Country
@@ -82,6 +82,11 @@ namespace RaspberryPi.Model
         public static bool operator !=(Country left, Country right)
         {
             return !Equals(left, right);
+        }
+
+        public override string ToString()
+        {
+            return this.Name;
         }
     }
 }

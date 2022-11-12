@@ -1,9 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RaspberryPi.Model;
+using RaspberryPi.Extensions;
+using RaspberryPi.Process;
 using RaspberryPi.Services;
 using RaspberryPi.Storage;
 
@@ -14,14 +19,17 @@ namespace RaspberryPi.Network
     /// </summary>
     public class AccessPoint : IAccessPoint
     {
-        private const string HostapdServiceName = "hostapd@wlan0.service";
-        private const string HostapdWlan0ConfFilePath = "/etc/hostapd/wlan0.conf";
-        private const string InterfaceName = "wlan0";
-        private const string DnsmasqServiceName = "dnsmasq.service";
-        private const string DnsmasqConfFilePath = "/etc/dnsmasq.conf";
+        private static readonly string[] NewLineChars = new string[] { "\n", "\r\n" };
+        private const int PskMinLength = 8;
+        private const int PskMaxLength = 64;
+        internal const string HostapdServiceName = "hostapd";
+        internal const string HostapdConfFilePath = "/etc/hostapd/hostapd.conf";
+        internal const string DnsmasqServiceName = "dnsmasq";
+        internal const string DnsmasqConfFilePath = "/etc/dnsmasq.conf";
         private const string DefaultChannel = "acs_survey";
 
         private readonly ILogger logger;
+        private readonly IProcessRunner processRunner;
         private readonly ISystemCtl systemCtl;
         private readonly IWPA wpa;
         private readonly IDHCP dhcp;
@@ -29,67 +37,140 @@ namespace RaspberryPi.Network
 
         public AccessPoint(
             ILogger<AccessPoint> logger,
+            IProcessRunner processRunner,
             ISystemCtl systemCtl,
             IWPA wpa,
             IDHCP dhcp,
             IFileSystem fileSystem)
         {
             this.logger = logger;
+            this.processRunner = processRunner;
             this.systemCtl = systemCtl;
             this.wpa = wpa;
             this.dhcp = dhcp;
             this.fileSystem = fileSystem;
         }
 
-
-        /// <summary>
-        /// Check if the given adapter is in access point mode
-        /// </summary>
-        /// <param name="iface">Name of the interface</param>
-        /// <returns>True if the adapter is in AP mode</returns>
+        /// <inheritdoc/>
         public bool IsEnabled()
         {
             return
-                this.fileSystem.File.Exists(HostapdWlan0ConfFilePath) &&
-                this.systemCtl.IsActive(HostapdServiceName);
+                this.fileSystem.File.Exists(HostapdConfFilePath) &&
+                this.fileSystem.File.Exists(DnsmasqConfFilePath) &&
+                this.systemCtl.IsActive(HostapdServiceName) &&
+                this.systemCtl.IsActive(DnsmasqServiceName);
         }
 
-        /// <summary>
-        /// Start AP mode
-        /// </summary>
-        /// <returns>Start result</returns>
-        public void Start()
+        public CommandLineResult TestDnsmasq()
         {
+            var testResult = this.processRunner.TryExecuteCommand($"dnsmasq --test -C {DnsmasqConfFilePath}");
+            return testResult;
+        }
+
+        /// <inheritdoc/>
+        public async Task StartAsync()
+        {
+            this.logger.LogDebug("StartAsync");
+
+            this.EnsureHostapdConfigurationExists();
+            this.EnsureDnsmaqConfigurationExists();
+            await this.EnsureDhcpIsConfigured();
+
+            if (!this.systemCtl.IsEnabled(HostapdServiceName))
+            {
+                this.systemCtl.UnmaskService(HostapdServiceName);
+                this.systemCtl.EnableService(HostapdServiceName);
+            }
+
+            if (!this.systemCtl.IsEnabled(DnsmasqServiceName))
+            {
+                this.systemCtl.UnmaskService(DnsmasqServiceName);
+                this.systemCtl.EnableService(DnsmasqServiceName);
+            }
+
             if (!this.systemCtl.IsActive(HostapdServiceName))
             {
                 this.systemCtl.StartService(HostapdServiceName);
-                this.systemCtl.EnableService(HostapdServiceName);
             }
 
             if (!this.systemCtl.IsActive(DnsmasqServiceName))
             {
                 this.systemCtl.StartService(DnsmasqServiceName);
-                this.systemCtl.EnableService(DnsmasqServiceName);
             }
         }
 
-        /// <summary>
-        /// Stop AP mode
-        /// </summary>
-        /// <returns>Stop result</returns>
+        /// <inheritdoc/>
+        public async Task RestartAsync()
+        {
+            this.logger.LogDebug("RestartAsync");
+
+            this.EnsureHostapdConfigurationExists();
+            this.EnsureDnsmaqConfigurationExists();
+            await this.EnsureDhcpIsConfigured();
+
+            if (!this.systemCtl.IsEnabled(HostapdServiceName))
+            {
+                this.systemCtl.UnmaskService(HostapdServiceName);
+                this.systemCtl.EnableService(HostapdServiceName);
+            }
+
+            if (!this.systemCtl.IsEnabled(DnsmasqServiceName))
+            {
+                this.systemCtl.UnmaskService(DnsmasqServiceName);
+                this.systemCtl.EnableService(DnsmasqServiceName);
+            }
+
+            this.systemCtl.RestartService(HostapdServiceName);
+            this.systemCtl.RestartService(DnsmasqServiceName);
+        }
+
+        /// <inheritdoc/>
         public void Stop()
         {
+            this.logger.LogDebug("Stop");
 
             if (this.systemCtl.IsActive(HostapdServiceName))
             {
                 this.systemCtl.StopService(HostapdServiceName);
-                this.systemCtl.DisableService(HostapdServiceName);
             }
 
             if (this.systemCtl.IsActive(DnsmasqServiceName))
             {
                 this.systemCtl.StopService(DnsmasqServiceName);
+            }
+
+            if (this.systemCtl.IsEnabled(HostapdServiceName))
+            {
+                this.systemCtl.DisableService(HostapdServiceName);
+            }
+
+            if (this.systemCtl.IsEnabled(DnsmasqServiceName))
+            {
                 this.systemCtl.DisableService(DnsmasqServiceName);
+            }
+        }
+
+        private void EnsureHostapdConfigurationExists()
+        {
+            if (!this.fileSystem.File.Exists(HostapdConfFilePath))
+            {
+                throw new InvalidOperationException($"No hostapd configuration found, use {nameof(ConfigureAsync)} method to configure the access point first"); // M589
+            }
+        }
+
+        private void EnsureDnsmaqConfigurationExists()
+        {
+            if (!this.fileSystem.File.Exists(DnsmasqConfFilePath))
+            {
+                throw new InvalidOperationException($"No dnsmasq configuration found, use {nameof(ConfigureAsync)} method to configure the access point first"); // M589
+            }
+        }
+
+        private async Task EnsureDhcpIsConfigured()
+        {
+            if (!await this.dhcp.IsAPConfiguredAsync())
+            {
+                throw new InvalidOperationException($"No access point configuration found. Use {nameof(ConfigureAsync)} method to configure the access point first."); // M587
             }
         }
 
@@ -102,8 +183,13 @@ namespace RaspberryPi.Network
         /// <param name="channel">The wifi channel number. Automatically selected if null.</param>
         /// <param name="country">The country in which this access point operates. If null, country code is read from wifi configuration.</param>
         /// <returns></returns>
-        public async Task ConfigureAsync(string ssid, string psk, IPAddress ipAddress, int? channel = null, Country country = null)
+        public async Task ConfigureAsync(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel = null, Country country = null)
         {
+            if (iface == null)
+            {
+                throw new ArgumentNullException(nameof(iface), $"Parameter {nameof(iface)} must not be null.");
+            }
+
             if (string.IsNullOrEmpty(ssid))
             {
                 throw new ArgumentNullException(nameof(ssid), $"Parameter {nameof(ssid)} must not be null or empty.");
@@ -114,9 +200,19 @@ namespace RaspberryPi.Network
                 throw new ArgumentNullException(nameof(psk), $"Parameter {nameof(psk)} must not be null or empty.");
             }
 
+            if (psk.Length is < PskMinLength or > PskMaxLength)
+            {
+                throw new ArgumentNullException(nameof(psk), $"Parameter {nameof(psk)} must be between {PskMinLength} and {PskMaxLength} characters.");
+            }
+
             if (ipAddress == null)
             {
                 throw new ArgumentNullException(nameof(ipAddress), $"Parameter {nameof(ipAddress)} must not be null.");
+            }
+
+            if (ipAddress == IPAddress.Any || ipAddress == IPAddress.Broadcast || ipAddress == IPAddress.None || ipAddress == IPAddress.Loopback)
+            {
+                throw new ArgumentNullException(nameof(ipAddress), $"Parameter {nameof(ipAddress)} is not valid.");
             }
 
             string countryCode;
@@ -127,7 +223,8 @@ namespace RaspberryPi.Network
             }
             else
             {
-                countryCode = await this.wpa.GetCountryCode();
+                var wpaSupplicantConf = await this.wpa.GetConfigAsync();
+                countryCode = wpaSupplicantConf.Country.Alpha2;
             }
 
             if (string.IsNullOrWhiteSpace(countryCode))
@@ -143,72 +240,111 @@ namespace RaspberryPi.Network
 
             this.logger.LogDebug($"ConfigureAsync: ssid={ssid}, psk={{suppressed}}, ipAddress={ipAddress}, channel={channelString}, country={countryCode}");
 
-            if (ssid == "*")
+            this.logger.LogDebug($"ConfigureAsync: Writing dnsmasq config --> {DnsmasqConfFilePath}...");
+            using (var dnsmasqTemplateStream = Configurations.GetDnsmasqTemplateStream())
             {
-                // Delete configuration files again
-                var fileDeleted = false;
-                if (this.fileSystem.File.Exists(HostapdWlan0ConfFilePath))
-                {
-                    this.fileSystem.File.Delete(HostapdWlan0ConfFilePath);
-                    fileDeleted = true;
-                }
+                using var reader = new StreamReader(dnsmasqTemplateStream);
+                using var writer = this.fileSystem.FileStreamFactory.CreateStreamWriter(DnsmasqConfFilePath, FileMode.Create, FileAccess.Write);
 
-                if (this.fileSystem.File.Exists(DnsmasqConfFilePath))
-                {
-                    this.fileSystem.File.Delete(DnsmasqConfFilePath);
-                    fileDeleted = true;
-                }
+                var ip = ipAddress.GetAddressBytes();
+                var ipRangeStart = $"{ip[0]}.{ip[1]}.{ip[2]}.{(ip[3] is < 100 or > 150 ? 100 : 151)}";
+                var ipRangeEnd = $"{ip[0]}.{ip[1]}.{ip[2]}.{(ip[3] is < 100 or > 150 ? 150 : 200)}";
 
-                if (fileDeleted)
+                while (!reader.EndOfStream)
                 {
-                    // Reset IP address configuration to station mode
-                    await this.dhcp.SetIPAddressAsync(InterfaceName, IPAddress.Any, null, null, null);
+                    var line = await reader.ReadLineAsync();
+                    line = line.Replace("{ipRangeStart}", ipRangeStart);
+                    line = line.Replace("{ipRangeEnd}", ipRangeEnd);
+                    line = line.Replace("{ipAddress}", ipAddress.ToString());
+                    await writer.WriteLineAsync(line);
                 }
             }
-            else
+
+            this.processRunner.ExecuteCommand("sudo rfkill unblock wlan");
+
+            this.logger.LogDebug($"ConfigureAsync: Writing hostapd config --> {HostapdConfFilePath}...");
+            using (var hostapdTemplateStream = Configurations.GetHostapdTemplateStream())
             {
-                this.logger.LogDebug($"ConfigureAsync: Writing hostapd config --> {HostapdWlan0ConfFilePath}...");
-                using (var hostapdTemplateStream = Configurations.GetHostapdTemplateStream())
+                using var reader = new StreamReader(hostapdTemplateStream);
+                using var writer = this.fileSystem.FileStreamFactory.CreateStreamWriter(HostapdConfFilePath, FileMode.Create, FileAccess.Write);
+
+                while (!reader.EndOfStream)
                 {
-                    using var reader = new StreamReader(hostapdTemplateStream);
-                    using var writer = this.fileSystem.FileStreamFactory.CreateStreamWriter(HostapdWlan0ConfFilePath, FileMode.Create, FileAccess.Write);
-
-                    while (!reader.EndOfStream)
-                    {
-                        var line = await reader.ReadLineAsync();
-                        line = line.Replace("{ssid}", ssid);
-                        line = line.Replace("{psk}", psk);
-                        line = line.Replace("{channel}", channelString);
-                        line = line.Replace("{countryCode}", countryCode);
-                        await writer.WriteLineAsync(line);
-                    }
+                    var line = await reader.ReadLineAsync();
+                    line = line.Replace("{ssid}", ssid);
+                    line = line.Replace("{countryCode}", countryCode);
+                    line = line.Replace("{channel}", channelString);
+                    line = line.Replace("{psk}", psk);
+                    await writer.WriteLineAsync(line);
                 }
+            }
 
-                this.logger.LogDebug($"ConfigureAsync: Writing dnsmasq config --> {HostapdWlan0ConfFilePath}...");
-                using (var dnsmasqTemplateStream = Configurations.GetDnsmasqTemplateStream())
-                {
-                    using var reader = new StreamReader(dnsmasqTemplateStream);
-                    using var writer = this.fileSystem.FileStreamFactory.CreateStreamWriter(DnsmasqConfFilePath, FileMode.Create, FileAccess.Write);
+            //this.logger.LogDebug($"ConfigureAsync: Set IP address configuration for AP mode");
+            //await this.dhcp.SetIPAddressAsync(iface, ipAddress, null, null, null, true);
 
-                    var ip = ipAddress.GetAddressBytes();
-                    var ipRangeStart = $"{ip[0]}.{ip[1]}.{ip[2]}.{(ip[3] is < 100 or > 150 ? 100 : 151)}";
-                    var ipRangeEnd = $"{ip[0]}.{ip[1]}.{ip[2]}.{(ip[3] is < 100 or > 150 ? 150 : 200)}";
+            this.logger.LogDebug($"ConfigureAsync for ssid={ssid} finished successfully");
+        }
 
-                    while (!reader.EndOfStream)
-                    {
-                        var line = await reader.ReadLineAsync();
-                        line = line.Replace("{ipRangeStart}", ipRangeStart);
-                        line = line.Replace("{ipRangeEnd}", ipRangeEnd);
-                        line = line.Replace("{ipAddress}", ipAddress.ToString());
-                        await writer.WriteLineAsync(line);
-                    }
-                }
+        public async Task DeleteConfigurationAsync(INetworkInterface iface)
+        {
+            // Try to stop the access point
+            this.Stop();
 
-                this.logger.LogDebug($"ConfigureAsync: Set IP address configuration for AP mode");
-                await this.dhcp.SetIPAddressAsync(InterfaceName, ipAddress, null, null, null, true);
+            // Delete configuration files again
+            var fileDeleted = false;
+            if (this.fileSystem.File.Exists(HostapdConfFilePath))
+            {
+                this.fileSystem.File.Delete(HostapdConfFilePath);
+                fileDeleted = true;
+            }
 
-                this.logger.LogDebug($"ConfigureAsync for ssid={ssid} finished successfully");
+            if (this.fileSystem.File.Exists(DnsmasqConfFilePath))
+            {
+                this.fileSystem.File.Delete(DnsmasqConfFilePath);
+                fileDeleted = true;
+            }
+
+            if (fileDeleted)
+            {
+                // Reset IP address configuration to station mode
+                await this.dhcp.SetIPAddressAsync(iface, IPAddress.Any, null, null, null);
             }
         }
+
+        /// <inheritdoc/>
+        public IEnumerable<ConnectedAccessPointClient> GetConnectedClients(INetworkInterface iface)
+        {
+            if (iface == null)
+            {
+                throw new ArgumentNullException($"Parameter '{nameof(iface)}' must not be null", nameof(iface));
+            }
+
+            var commandLineResult = this.processRunner.ExecuteCommand($"sudo iw dev {iface.Name} station dump");
+
+            var clients = new List<ConnectedAccessPointClient>();
+            var regex = new Regex(@$"Station (?<MacAddress>[0-9a-fA-F:]{{17}}) \(on {iface.Name}\)");
+
+            var split = regex.Split(commandLineResult.OutputData).Where(s => !string.IsNullOrEmpty(s)).ToArray();
+            for (var i = 0; i < split.Length; i += 2)
+            {
+                var macAddress = split[i].Replace(":", "-");
+                var content = split[i + 1];
+
+                var contentRegex = new Regex(@"\s*(?<PropertyName>.*):(\s*)(?<PropertyValue>.*)");
+                var matches = contentRegex.Matches(content).OfType<Match>();
+
+                clients.Add(new ConnectedAccessPointClient
+                {
+                    MacAddress = PhysicalAddress.Parse(macAddress),
+                    RxBitrate = RegexExtensions.ParseValue(matches, "rx bitrate"),
+                    TxBitrate = RegexExtensions.ParseValue(matches, "tx bitrate"),
+                    Authorized = RegexExtensions.ParseValueYesNo(matches, "authorized"),
+                    Authenticated = RegexExtensions.ParseValueYesNo(matches, "authenticated"),
+                });
+            }
+
+            return clients;
+        }
+
     }
 }

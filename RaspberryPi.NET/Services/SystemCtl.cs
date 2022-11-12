@@ -67,21 +67,21 @@ namespace RaspberryPi.Services
         private bool RunServiceCommand(string command, string serviceName)
         {
             var systemCtlCommand = $"sudo systemctl {command} {serviceName}";
-            this.logger.LogDebug($"RunServiceCommand: {systemCtlCommand}");
+            //this.logger.LogDebug($"RunServiceCommand: {systemCtlCommand}");
 
-            var commandLineInvocation = new CommandLineInvocation("/bin/bash", $"-c \"{systemCtlCommand}\"");
-            var result = this.processRunner.ExecuteCommand(commandLineInvocation);
+            //var commandLineInvocation = new CommandLineInvocation("/bin/bash", $"-c \"{systemCtlCommand}\"");
+            var result = this.processRunner.TryExecuteCommand(systemCtlCommand);
             var success = result.Success;
             if (success)
             {
-                this.logger.LogInformation(
+                this.logger.LogDebug(
                     $"RunServiceCommand: '{systemCtlCommand}' finished successfully");
             }
             else
             {
                 this.logger.LogInformation(
                     $"RunServiceCommand: '{systemCtlCommand}' failed with exit code {result.ExitCode}{Environment.NewLine}" +
-                    $"{string.Join(Environment.NewLine, $"> Error")}");
+                    $"{result.OutputData}");
             }
 
             return success;
@@ -92,8 +92,7 @@ namespace RaspberryPi.Services
             var systemctlCommand = $"sudo systemctl daemon-reload";
             this.logger.LogDebug($"ReloadDaemon: {systemctlCommand}");
 
-            var commandLineInvocation = new CommandLineInvocation("sudo", systemctlCommand);
-            var result = this.processRunner.ExecuteCommand(commandLineInvocation);
+            var result = this.processRunner.TryExecuteCommand(systemctlCommand);
             var success = result.Success;
             if (success)
             {

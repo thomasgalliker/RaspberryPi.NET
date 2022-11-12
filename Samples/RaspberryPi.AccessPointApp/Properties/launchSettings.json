@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RaspiAP": {
+      "commandName": "Project",
+      "commandLineArgs": "0"
+    }
+  }
+}
