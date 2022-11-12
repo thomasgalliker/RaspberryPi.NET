@@ -23,14 +23,19 @@ namespace RaspberryPi.Tests.TestData
             return ResourceLoader.Current.GetEmbeddedResourceString(Assembly, "free.txt");
         }
 
-        public static string GetWPASupplicantConf()
+        public static string GetWPASupplicantConf_Example1()
         {
-            return ResourceLoader.Current.GetEmbeddedResourceString(Assembly, "wpa_supplicant.conf");
+            return ResourceLoader.Current.GetEmbeddedResourceString(Assembly, "wpa_supplicant_example1.conf");
         }
         
-        public static Stream GetWPASupplicantConfStream()
+        public static Stream GetWPASupplicantConf_Example1_Stream()
         {
-            return ResourceLoader.Current.GetEmbeddedResourceStream(Assembly, "wpa_supplicant.conf");
+            return ResourceLoader.Current.GetEmbeddedResourceStream(Assembly, "wpa_supplicant_example1.conf");
+        }
+        
+        public static Stream GetWPASupplicantConf_Example2_Stream()
+        {
+            return ResourceLoader.Current.GetEmbeddedResourceStream(Assembly, "wpa_supplicant_example2.conf");
         }
         
         public static string GetIwlistWlan0Scan()

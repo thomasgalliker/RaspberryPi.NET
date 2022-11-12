@@ -7,7 +7,7 @@ namespace RaspberryPi.Network
     /// The network configuration of wpa_supplicant.conf.
     /// Reference: https://www.daemon-systems.org/man/wpa_supplicant.conf.5.html
     /// </summary>
-    [DebuggerDisplay("{this.SSID}")]
+    [DebuggerDisplay("WPASupplicantNetwork: {this.SSID}")]
     public class WPASupplicantNetwork
     {
         /// <summary>

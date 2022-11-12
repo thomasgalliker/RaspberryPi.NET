@@ -199,30 +199,6 @@ namespace RaspberryPi.Network
             return null;
         }
 
-        /// <summary>
-        /// Try to read the country code from the wpa_supplicant config file
-        /// </summary>
-        /// <returns>Country code or null if not found</returns>
-        public async Task<string> GetCountryCodeAsync()
-        {
-            if (this.fileSystem.File.Exists(WpaSupplicantConfFilePath))
-            {
-                using var reader = this.fileSystem.FileStreamFactory.CreateStreamReader(WpaSupplicantConfFilePath, FileMode.Open, FileAccess.Read);
-
-                while (!reader.EndOfStream)
-                {
-                    var line = (await reader.ReadLineAsync()).TrimStart();
-                    if (line.StartsWith("country="))
-                    {
-                        var startPosition = "country=".Length;
-                        return line.Substring(startPosition).Trim(' ', '\t');
-                    }
-                }
-            }
-
-            return null;
-        }
-
         /// <inheritdoc/>
         public IEnumerable<string> ScanSSIDs(INetworkInterface iface)
         {
@@ -252,7 +228,7 @@ namespace RaspberryPi.Network
             }
 
             var conf = new WPASupplicantConf();
-            using var configStream = this.fileSystem.FileStreamFactory.Create(WpaSupplicantConfFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite); // TODO: Read is enough here
+            using var configStream = this.fileSystem.FileStreamFactory.Create(WpaSupplicantConfFilePath, FileMode.Open, FileAccess.Read);
             {
                 using var reader = new StreamReader(configStream, Encoding.UTF8, true, FileBufferSize, leaveOpen: true);
                 {
@@ -362,12 +338,27 @@ namespace RaspberryPi.Network
                 throw new ArgumentException($"Parameter '{nameof(conf)}.{nameof(conf.Networks)}.{nameof(WPASupplicantNetwork.SSID)}' must not be null or empty", $"{nameof(conf)}.{nameof(conf.Networks)}.{nameof(WPASupplicantNetwork.SSID)}");
             }
 
+            //if (conf.Networks.Any(n => string.IsNullOrEmpty(n.PSK) && n.KeyMgmt != "NONE"))
+            //{
+            //}
+
             if (conf.Networks.Any(n => !string.IsNullOrEmpty(n.PSK) && (n.PSK.Length < PskMinLength || n.PSK.Length > PskMaxLength)))
             {
                 throw new ArgumentException($"Parameter '{nameof(conf)}.{nameof(conf.Networks)}.{nameof(WPASupplicantNetwork.PSK)}' must be between {PskMinLength} and {PskMaxLength} characters.", $"{nameof(conf)}.{nameof(conf.Networks)}.{nameof(WPASupplicantNetwork.PSK)}");
             }
 
-            using var configStream = this.fileSystem.FileStreamFactory.Create(WpaSupplicantConfFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            var wpaSupplicantDir = Path.GetDirectoryName(WpaSupplicantConfFilePath);
+            if (!this.fileSystem.Directory.Exists(wpaSupplicantDir))
+            {
+                this.fileSystem.Directory.CreateDirectory(wpaSupplicantDir);
+            }
+
+            if (this.fileSystem.File.Exists(WpaSupplicantConfFilePath))
+            {
+                this.fileSystem.File.Delete(WpaSupplicantConfFilePath);
+            }
+
+            using var configStream = this.fileSystem.FileStreamFactory.Create(WpaSupplicantConfFilePath, FileMode.CreateNew, FileAccess.Write);
             {
                 using var writer = new StreamWriter(configStream, Encodings.UTF8EncodingWithoutBOM, FileBufferSize, leaveOpen: true);
                 {
@@ -400,14 +391,14 @@ namespace RaspberryPi.Network
 
                             if (!string.IsNullOrEmpty(network.PSK))
                             {
-                                if (network.PSK.Length == 64)
+                                if (network.PSK.Length < 64)
                                 {
                                     var pskHash = WPAPassphrase.GetHash(network.SSID, network.PSK);
                                     await writer.WriteLineAsync($"\tpsk={pskHash}");
                                 }
                                 else
                                 {
-                                    await writer.WriteLineAsync($"\tpsk=\"{network.PSK}\"");
+                                    await writer.WriteLineAsync($"\tpsk={network.PSK}");
                                 }
                             }
 
@@ -443,9 +434,14 @@ namespace RaspberryPi.Network
                 }
             }
 
+            this.processRunner.ExecuteCommand($"sudo chmod 600 {WpaSupplicantConfFilePath}");
+            
+            this.processRunner.ExecuteCommand($"sudo rfkill unblock wifi");
 
             // Restart the service to apply the new configuration
             this.Restart();
+
+            this.logger.LogDebug($"SetConfigAsync finished successfully");
         }
 
         public async Task<WPASupplicantNetwork> GetNetworkAsync(string ssid)

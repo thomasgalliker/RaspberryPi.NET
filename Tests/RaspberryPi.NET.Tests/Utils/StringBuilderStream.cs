@@ -18,7 +18,7 @@ namespace RaspberryPi.Tests.Utils
         }
 
         public StringBuilderStream(Stream stream)
-            : this(stream.GetText())
+            : this(stream.GetString())
         {
         }
 

@@ -24,25 +24,40 @@ namespace RaspberryPi.Extensions
         /// Returns the copy of <paramref name="sourceStream"/>.
         /// </summary>
         /// <param name="sourceStream">The source stream.</param>
-        public static MemoryStream Copy(this Stream sourceStream)
+        public static MemoryStream Copy(this Stream sourceStream, bool writable = false)
         {
-            var targetStream = new MemoryStream();
+            var targetStream = new MemoryStream(new byte[1024], writable);
             sourceStream.Rewind().CopyTo(targetStream);
             return targetStream.Rewind();
         }
-
-        public static string GetText(this Stream stream)
+        
+        public static MemoryStream Copy(this MemoryStream sourceStream, bool writable = false)
         {
-            return stream.GetText(Encoding.UTF8);
+            return new MemoryStream(sourceStream.ToArray(), writable);
         }
 
-        public static string GetText(this Stream stream, Encoding encoding)
+        public static string GetString(this Stream stream)
+        {
+            return stream.GetString(Encoding.UTF8);
+        }
+
+        public static string GetString(this Stream stream, Encoding encoding)
         {
             using (var reader = new StreamReader(stream.Rewind(), encoding))
             {
                 var text = reader.ReadToEnd();
                 return text;
             }
+        }
+
+        public static string GetString(this MemoryStream memoryStream)
+        {
+            return memoryStream.GetString(Encoding.UTF8);
+        }
+
+        public static string GetString(this MemoryStream memoryStream, Encoding encoding)
+        {
+            return encoding.GetString(memoryStream.ToArray());
         }
     }
 }
