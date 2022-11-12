@@ -75,8 +75,8 @@ namespace RaspiAP
             {
                 var wpaSupplicantNetwork = new WPASupplicantNetwork
                 {
-                    SSID = "galliker",
-                    PSK = "abcdefg12345678",
+                    SSID = "testssid",
+                    PSK = "testpassword",
                 };
                 await networkManager.SetupStationMode(wlan0, wpaSupplicantNetwork);
             }
