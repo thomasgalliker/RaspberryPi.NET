@@ -31,11 +31,6 @@ namespace RaspiAP
             //    return -1;
             //}
 
-            //var cancellationTokenSource = new CancellationTokenSource();
-            //AppDomain.CurrentDomain.ProcessExit += (s, e) => cancellationTokenSource.Cancel();
-            //Console.CancelKeyPress += (s, e) => cancellationTokenSource.Cancel();
-            //await Task.Delay(-1, cancellationTokenSource.Token).ContinueWith(t => { });
-
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
@@ -75,8 +70,8 @@ namespace RaspiAP
             {
                 var wpaSupplicantNetwork = new WPASupplicantNetwork
                 {
-                    SSID = "testssid",
-                    PSK = "testpassword",
+                    SSID = "galliker",
+                    PSK = "abcdefg12345678",
                 };
                 await networkManager.SetupStationMode(wlan0, wpaSupplicantNetwork);
             }
