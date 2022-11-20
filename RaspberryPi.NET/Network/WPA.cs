@@ -170,7 +170,7 @@ namespace RaspberryPi.Network
                 }
 
                 // Current IP address configuration
-                var networkInterfaces = this.networkInterface.GetAllNetworkInterfaces();
+                var networkInterfaces = this.networkInterface.GetAll();
                 foreach (var iface in networkInterfaces)
                 {
                     if (iface.OperationalStatus == OperationalStatus.Up && iface.Name.StartsWith("w"))

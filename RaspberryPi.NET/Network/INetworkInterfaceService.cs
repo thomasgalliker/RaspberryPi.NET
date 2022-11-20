@@ -9,7 +9,7 @@ namespace RaspberryPi.Network
         /// Returns all available network interfaces.
         /// </summary>
         /// <returns>The enumeration of network interfaces.</returns>
-        IEnumerable<INetworkInterface> GetAllNetworkInterfaces();
+        IEnumerable<INetworkInterface> GetAll();
 
         /// <summary>
         /// Gets a network interface by <paramref name="index"/>.

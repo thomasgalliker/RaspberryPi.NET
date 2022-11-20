@@ -250,7 +250,7 @@ namespace RaspberryPi.Network
         {
             var stringBuilder = new StringBuilder();
             this.logger.LogInformation("ReportAsync");
-            if (this.networkInterfaceService.GetAllNetworkInterfaces().Count(item => item.NetworkInterfaceType != NetworkInterfaceType.Loopback) > 1)
+            if (this.networkInterfaceService.GetAll().Count(item => item.NetworkInterfaceType != NetworkInterfaceType.Loopback) > 1)
             {
                 // Add labels if there is more than one available network interface
                 stringBuilder.Append($"Interface {iface.Name}: ");

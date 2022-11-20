@@ -58,3 +58,6 @@ https://github.com/snowdayclub/rpi-wifisetup-ble/blob/5bc236a90fa6c8ccaebef845d6
 
 https://www.daemon-systems.org/man/wpa_supplicant.conf.5.html
 
+https://github.com/PetrusBellmonte/MyDino/blob/d36755fc7a152b40fe71918576df6c9e6d15c20e/wifi/WifiConnector.md
+
+https://stackoverflow.com/questions/43644082/raspberry-pi-3-using-hostapd-and-dnsmasq-how-to-set-default-web-page-on-connect

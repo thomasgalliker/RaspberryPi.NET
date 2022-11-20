@@ -59,9 +59,9 @@ namespace RaspberryPi.Tests.Network
             fileSystemMock.Setup(f => f.FileStreamFactory.Create(DHCP.DhcpcdConfFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                 .Returns(() => configStream);
 
-            var networkInterfaceMocks = NetworkInterfaces.GetNetworkInterfaceMocks();
+            var networkInterfaceMocks = NetworkInterfaces.GetRapsberryPi4Interfaces();
             var networkInterfaceMock = this.autoMocker.GetMock<INetworkInterfaceService>();
-            networkInterfaceMock.Setup(n => n.GetAllNetworkInterfaces())
+            networkInterfaceMock.Setup(n => n.GetAll())
                 .Returns(networkInterfaceMocks.Select(m => m.Object));
 
             var processRunnerMock = this.autoMocker.GetMock<IProcessRunner>();
@@ -105,9 +105,9 @@ namespace RaspberryPi.Tests.Network
             fileSystemMock.Setup(f => f.FileStreamFactory.Create(DHCP.DhcpcdConfFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                 .Returns(() => configStream);
 
-            var networkInterfaceMocks = NetworkInterfaces.GetNetworkInterfaceMocks();
+            var networkInterfaceMocks = NetworkInterfaces.GetRapsberryPi4Interfaces();
             var networkInterfaceServiceMock = this.autoMocker.GetMock<INetworkInterfaceService>();
-            networkInterfaceServiceMock.Setup(n => n.GetAllNetworkInterfaces())
+            networkInterfaceServiceMock.Setup(n => n.GetAll())
                 .Returns(networkInterfaceMocks.Select(m => m.Object));
 
             var systemCtlMock = this.autoMocker.GetMock<ISystemCtl>();
@@ -131,7 +131,7 @@ namespace RaspberryPi.Tests.Network
             fileSystemMock.Verify(f => f.FileStreamFactory.Create(DHCP.DhcpcdConfFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite), Times.Once);
             fileSystemMock.VerifyNoOtherCalls();
 
-            networkInterfaceServiceMock.Verify(p => p.GetAllNetworkInterfaces(), Times.Once);
+            networkInterfaceServiceMock.Verify(p => p.GetAll(), Times.Once);
             networkInterfaceServiceMock.Verify(p => p.SetLinkDown(It.Is<INetworkInterface>(i => i.Name == "wlan0")), Times.Once);
             networkInterfaceServiceMock.Verify(p => p.SetLinkUp(It.Is<INetworkInterface>(i => i.Name == "wlan0")), Times.Once);
             networkInterfaceServiceMock.VerifyNoOtherCalls();

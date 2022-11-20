@@ -1,4 +1,5 @@
-﻿using System.Net.NetworkInformation;
+﻿using System;
+using System.Net.NetworkInformation;
 
 namespace RaspberryPi.Network
 {
@@ -13,5 +14,7 @@ namespace RaspberryPi.Network
         public bool Authorized { get; set; }
 
         public bool Authenticated { get; set; }
+        
+        public TimeSpan ConnectedTime { get; set; }
     }
 }

@@ -36,16 +36,16 @@ namespace RaspberryPi.Tests.Network
             this.autoMocker.Use<ILogger<AccessPoint>>(new TestOutputHelperLogger<AccessPoint>(testOutputHelper));
 
             var rootPath = Path.GetFullPath(".");
-            System.IO.Directory.CreateDirectory(Path.Combine(rootPath, "etc"));
             this.autoMocker.Use<IFileSystem>(new FileSystem(new TestFile(rootPath), new TestDirectory(rootPath), new TestFileStreamFactory(rootPath)));
             this.autoMocker.Use<IProcessRunner>(this.autoMocker.CreateInstance<NullProcessRunner>());
+            this.autoMocker.Use<IServiceConfigurator>(this.autoMocker.CreateInstance<LinuxServiceConfigurator>());
             this.autoMocker.Use<IDHCP>(this.autoMocker.CreateInstance<DHCP>());
             this.autoMocker.Use<IWPA>(this.autoMocker.CreateInstance<WPA>());
             this.autoMocker.Use<IAccessPoint>(this.autoMocker.CreateInstance<AccessPoint>());
 
-            var networkInterfaceMocks = NetworkInterfaces.GetNetworkInterfaceMocks();
+            var networkInterfaceMocks = NetworkInterfaces.GetRapsberryPi4Interfaces();
             var networkInterfaceServiceMock = this.autoMocker.GetMock<INetworkInterfaceService>();
-            networkInterfaceServiceMock.Setup(n => n.GetAllNetworkInterfaces())
+            networkInterfaceServiceMock.Setup(n => n.GetAll())
                 .Returns(networkInterfaceMocks.Select(n => n.Object));
         }
 
@@ -68,7 +68,7 @@ namespace RaspberryPi.Tests.Network
             var country = Countries.Switzerland;
 
             // Act
-            await networkManager.SetupAccessPoint(ifaceMock.Object, ssid, psk, ipAddress, channel, country);
+            await networkManager.SetupAccessPoint2(ifaceMock.Object, ssid, psk, ipAddress, channel, country);
 
             // Assert
             var isAPConfigured = await dhcp.IsAPConfiguredAsync();

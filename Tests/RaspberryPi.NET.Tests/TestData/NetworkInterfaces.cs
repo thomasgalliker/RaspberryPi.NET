@@ -18,6 +18,11 @@ namespace RaspberryPi.Tests.TestData
             return networkInterfaceMock;
         }
         
+        internal static Mock<INetworkInterface> GetLoopback()
+        {
+            return GetNetworkInterfaceMock("lo");
+        }
+        
         internal static Mock<INetworkInterface> GetWlan0()
         {
             return GetNetworkInterfaceMock("wlan0");
@@ -28,10 +33,17 @@ namespace RaspberryPi.Tests.TestData
             return GetNetworkInterfaceMock("eth0");
         }
 
-        internal static IEnumerable<Mock<INetworkInterface>> GetNetworkInterfaceMocks()
+        internal static IEnumerable<Mock<INetworkInterface>> GetRapsberryPi4Interfaces()
         {
+            yield return GetLoopback();
             yield return GetWlan0();
             yield return GetEth0();
+        }
+
+        internal static IEnumerable<Mock<INetworkInterface>> GetRapsberryPiZero2Interfaces()
+        {
+            yield return GetLoopback();
+            yield return GetWlan0();
         }
     }
 }

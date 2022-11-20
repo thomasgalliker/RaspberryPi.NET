@@ -191,7 +191,7 @@ namespace RaspberryPi.Process
                         }
                         else
                         {
-                            this.logger.LogDebug($"{executable} {arguments} --> exit code {exitCode}");
+                            this.logger.LogInformation($"{executable} {arguments} --> exit code {exitCode}");
                         }
 
                         running = false;

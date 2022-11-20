@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -123,7 +126,7 @@ namespace RaspberryPi.Tests.Network
             var accessPoint = this.autoMocker.CreateInstance<AccessPoint>();
 
             // Act
-            await accessPoint.ConfigureAsync(ifaceMock.Object, "testssid", "testpassword", IPAddress.Parse("192.168.50.100"), 6);
+            await accessPoint.ConfigureAsync(ifaceMock.Object, "testssid", "testpassword", IPAddress.Parse("192.168.50.100"), null, 6);
 
             // Assert
             fileSystemMock.Verify(f => f.FileStreamFactory.CreateStreamWriter(AccessPoint.HostapdConfFilePath, FileMode.Create, FileAccess.Write), Times.Once);
@@ -177,11 +180,36 @@ namespace RaspberryPi.Tests.Network
             var connectedClients = accessPoint.GetConnectedClients(ifaceMock.Object);
 
             // Assert
-            connectedClients.Should().HaveCount(3);
-            connectedClients.ElementAt(0).MacAddress.ToString().Should().Be("086AC54CFFCC");
-            connectedClients.ElementAt(1).MacAddress.ToString().Should().Be("FE38D8447A1E");
-            connectedClients.ElementAt(2).MacAddress.ToString().Should().Be("CED5493CBE9F");
+            connectedClients.Should().BeEquivalentTo(new List<ConnectedAccessPointClient>
+            {
+                new ConnectedAccessPointClient
+                {
+                    MacAddress = PhysicalAddress.Parse("086AC54CFFCC"),
+                    TxBitrate = "72.2 MBit/s",
+                    RxBitrate = "72.2 MBit/s",
+                    Authorized = true,
+                    Authenticated = true,
+                    ConnectedTime = TimeSpan.ParseExact("00:00:58", "c", CultureInfo.InvariantCulture, TimeSpanStyles.None)
+                },
+                new ConnectedAccessPointClient
+                {
+                    MacAddress = PhysicalAddress.Parse("FE38D8447A1E"),
+                    TxBitrate = "65.0 MBit/s",
+                    RxBitrate = "1.0 MBit/s",
+                    Authorized = true,
+                    Authenticated = true,
+                    ConnectedTime = TimeSpan.ParseExact("00:03:03", "c", CultureInfo.InvariantCulture, TimeSpanStyles.None)
+                },
+                new ConnectedAccessPointClient
+                {
+                    MacAddress = PhysicalAddress.Parse("CED5493CBE9F"),
+                    TxBitrate = "65.0 MBit/s",
+                    RxBitrate = "24.0 MBit/s",
+                    Authorized = true,
+                    Authenticated = true,
+                    ConnectedTime = TimeSpan.ParseExact("00:05:09", "c", CultureInfo.InvariantCulture, TimeSpanStyles.None)
+                }
+            });
         }
-
     }
 }

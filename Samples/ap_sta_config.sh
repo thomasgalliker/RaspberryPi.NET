@@ -22,28 +22,6 @@ RASPBERRY='\033[0;35m'
 GREEN='\033[1;32m'
 RED='\033[1;31m'
 
-_welcome() {
-    VERSION="2.0.1"
-    echo -e "${RASPBERRY}\n"
-    echo -e "                                                                       "
-    echo -e "  /888888  /8888888                         /888888  /88888888 /888888 "
-    echo -e " /88__  88| 88__  88          /88          /88__  88|__  88__//88__  88"
-    echo -e "| 88  \ 88| 88  \ 88         | 88         | 88  \__/   | 88  | 88  \ 88"
-    echo -e "| 88888888| 8888888/       /88888888      |  888888    | 88  | 88888888"
-    echo -e "| 88__  88| 88____/       |__  88__/       \____  88   | 88  | 88__  88"
-    echo -e "| 88  | 88| 88               | 88          /88  \ 88   | 88  | 88  | 88"
-    echo -e "| 88  | 88| 88               |__/         |  888888/   | 88  | 88  | 88"
-    echo -e "|__/  |__/|__/                             \______/    |__/  |__/  |__/"
-    echo -e "                                                                       "
-    echo -e "                                                    version ${VERSION} "
-    echo -e " By https://github.com/MkLHX                                           "
-    echo -e "${GREEN}                                                               "
-    echo -e "Manage AP + STA modes on Raspberry Pi with the same wifi chip\n        "
-    echo -e "${RASPBERRY}                                                           "
-    echo -e "V2.x.x replaces chron with an integrated service model.                "
-    echo -e "${GREEN}                                                               "
-}
-
 _logger() {
     echo -e "${GREEN}"
     echo "${1}"
@@ -171,9 +149,6 @@ if ! test -v NO_INTERNET; then
     NO_INTERNET="false"
 fi
 
-# welcome cli user
-_welcome
-
 # Install dependencies
 _logger "check if dependencies needed"
 # keep order of dependencies installation
@@ -200,7 +175,7 @@ EOF
     bash -c 'cat > /etc/dnsmasq.conf' << EOF
 interface=lo,ap@wlan0
 no-dhcp-interface=lo,wlan0
-bind-interfaces
+bind-dynamic
 server=1.1.1.1
 domain-needed
 bogus-priv
@@ -327,11 +302,4 @@ elif test true == "${AP_ONLY}"; then
 elif test true != "${STA_ONLY}" && test true != "${AP_ONLY}"; then
     _logger "AP + STA configurations are finished!"
     _logger " --> You MUST REBOOT for the new AP changes to take effect."
-fi
-
-if test true != "${STA_ONLY}"; then
-    _logger "Wait during wlan0 reconnecting to internet..."
-    sleep 5
-    # pushd "$(dirname "${BASH_SOURCE[0]}")"; sudo ./ap_sta_cron2.sh; popd
-    #curl https://raw.githubusercontent.com/MkLHX/AP_STA_RPI_SAME_WIFI_CHIP/master/ap_sta_cron.sh | bash -s --
 fi

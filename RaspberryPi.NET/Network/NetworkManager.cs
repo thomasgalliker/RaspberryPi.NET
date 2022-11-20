@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using RaspberryPi.Process;
 
 namespace RaspberryPi.Network
 {
@@ -12,6 +13,7 @@ namespace RaspberryPi.Network
         private readonly IDHCP dhcp;
         private readonly IAccessPoint accessPoint;
         private readonly IWPA wpa;
+        private readonly IProcessRunner processRunner;
         private readonly INetworkInterfaceService networkInterfaceService;
 
         public NetworkManager(
@@ -19,12 +21,14 @@ namespace RaspberryPi.Network
             IDHCP dhcp,
             IAccessPoint accessPoint,
             IWPA wpa,
+            IProcessRunner processRunner,
             INetworkInterfaceService networkInterfaceService)
         {
             this.logger = logger;
             this.dhcp = dhcp;
             this.accessPoint = accessPoint;
             this.wpa = wpa;
+            this.processRunner = processRunner;
             this.networkInterfaceService = networkInterfaceService;
         }
 
@@ -35,13 +39,30 @@ namespace RaspberryPi.Network
 
             await this.dhcp.SetIPAddressAsync(iface, ipAddress, null, null, null, forAP: true);
 
-            await this.accessPoint.ConfigureAsync(iface, ssid, psk, ipAddress, channel, country);
+            await this.accessPoint.ConfigureAsync(iface, ssid, psk, ipAddress, null, channel, country);
 
             //this.wpa.Stop();
 
             //this.networkInterfaceService.SetLinkDown(iface); // TODO: REALLY???
 
             await this.accessPoint.RestartAsync();
+        }
+
+        public async Task SetupAccessPoint2(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel, Country country)
+        {
+            var ifaceAP = new NetworkInterface($"ap@{iface.Name}");
+            this.logger.LogDebug($"SetupAccessPoint: iface={ifaceAP}, ssid={ssid}");
+
+            await this.dhcp.SetIPAddressAsync(ifaceAP, ipAddress, null, null, null, forAP: true);
+
+            await this.accessPoint.ConfigureAsync(ifaceAP, ssid, psk, ipAddress, null, channel, country);
+
+            //this.wpa.Stop();
+
+            //this.networkInterfaceService.SetLinkDown(iface); // TODO: REALLY???
+
+            //await this.accessPoint.RestartAsync();
+            this.logger.LogDebug($"SetupAccessPoint: Finished successfully. Please reboot now!");
         }
 
         /// <inheritdoc />
@@ -63,21 +84,29 @@ namespace RaspberryPi.Network
 
             this.logger.LogDebug($"SetupStationMode");
 
-            await this.wpa.AddOrUpdateNetworkAsync(network);
-
-            await this.dhcp.SetIPAddressAsync(iface, null, null, null, null, null);
-
             // No longer in AP mode
             this.accessPoint.Stop();
 
+            await this.dhcp.SetIPAddressAsync(iface, null, null, null, null, null);
+
+            await this.wpa.AddOrUpdateNetworkAsync(network);
+
+            await Task.Delay(1000);
+
+            this.processRunner.TryExecuteCommand($"sudo wpa_cli -i {iface.Name} reconfigure");
+
+            await Task.Delay(10000);
+
             // Disable the adapter
-            //this.networkInterfaceService.SetLinkDown(iface);
+            this.networkInterfaceService.SetLinkDown(iface);
+
+            await Task.Delay(2000);
 
             // Start station mode
             this.wpa.Start();
 
             // Enable the adapter again
-            //this.networkInterfaceService.SetLinkUp(iface);
+            this.networkInterfaceService.SetLinkUp(iface);
 
             // TODO: See line 88 in Interface class
             // wpa_cli list_networks ...

@@ -14,7 +14,7 @@ namespace RaspberryPi.Network
         /// <param name="psk">WPA pre-shared keys for WPA-PSK.</param>
         /// <param name="ipAddress">The IP address to be used for this access point.</param>
         /// <param name="channel">Channel number (IEEE 802.11).</param>
-        Task ConfigureAsync(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel = null, Country country = null);
+        Task ConfigureAsync(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, INetworkInterface[] noDhcpInterfaces = null, int ? channel = null, Country country = null);
 
         /// <summary>
         /// Removes the access point configuration.

@@ -2,6 +2,8 @@
 {
     public interface IFile
     {
+        void Create(string path);
+
         void Delete(string path);
 
         bool Exists(string path);

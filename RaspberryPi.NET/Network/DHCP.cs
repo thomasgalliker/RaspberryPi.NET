@@ -28,7 +28,7 @@ namespace RaspberryPi.Network
         /// <summary>
         /// Regex to capture the interface name
         /// </summary>
-        private static readonly Regex IfaceRegex = new(@"^\s*interface\s+(\w+)");
+        private static readonly Regex IfaceRegex = new(@"^\s*interface\s+(?<InterfaceName>.*)");
 
         /// <summary>
         /// Regex to capture the configured IP address
@@ -189,7 +189,7 @@ namespace RaspberryPi.Network
             }
 
             // Rewrite the network config
-            await this.UpdateProfile(iface, ip, netmask, gateway, dnsServer, forAP ?? false);
+            await this.UpdateProfile(iface.Name, ip, netmask, gateway, dnsServer, forAP ?? false);
 
             // Restart dhcpcd if the AP configuration has changed
             if (forAP != null)
@@ -198,7 +198,7 @@ namespace RaspberryPi.Network
             }
 
             // Restart Ethernet adapter if it is up to apply the new configuration
-            var networkInterfaces = this.networkInterfaceService.GetAllNetworkInterfaces();
+            var networkInterfaces = this.networkInterfaceService.GetAll();
             if (networkInterfaces.Any(item => item.Name == iface.Name && item.OperationalStatus == OperationalStatus.Up) &&
                 forAP == null)
             {
@@ -213,38 +213,41 @@ namespace RaspberryPi.Network
         /// <returns>List of configured profiles</returns>
         private async Task<IEnumerable<DHCPProfile>> GetDhcpProfiles()
         {
-            var result = new List<DHCPProfile>();
+            var dhcpProfiles = new List<DHCPProfile>();
 
             if (this.fileSystem.File.Exists(DhcpcdConfFilePath))
             {
                 using var reader = this.fileSystem.FileStreamFactory.CreateStreamReader(DhcpcdConfFilePath, FileMode.Open, FileAccess.Read);
 
-                DHCPProfile item = null;
+                DHCPProfile dhcpProfile = null;
                 while (!reader.EndOfStream)
                 {
                     var line = await reader.ReadLineAsync();
                     var match = IfaceRegex.Match(line);
                     if (match.Success)
                     {
-                        if (item != null)
+                        if (dhcpProfile != null)
                         {
-                            result.Add(item);
+                            dhcpProfiles.Add(dhcpProfile);
                         }
 
                         // Interface name
-                        item = new DHCPProfile() { Interface = match.Groups[1].Value };
+                        dhcpProfile = new DHCPProfile()
+                        {
+                            Interface = match.Groups[1].Value
+                        };
                     }
-                    else if (item != null)
+                    else if (dhcpProfile != null)
                     {
                         match = IpRegex.Match(line);
                         if (match.Success)
                         {
                             // IP address
-                            item.IP = IPAddress.Parse(match.Groups[1].Value);
+                            dhcpProfile.IP = IPAddress.Parse(match.Groups[1].Value);
                             if (match.Groups.Count == 3)
                             {
                                 // Subnet mask (CIDR)
-                                item.CIDR = int.Parse(match.Groups[2].Value);
+                                dhcpProfile.CIDR = int.Parse(match.Groups[2].Value);
                             }
                         }
                         else
@@ -253,7 +256,7 @@ namespace RaspberryPi.Network
                             match = RoutersRegex.Match(line);
                             if (match.Success)
                             {
-                                item.Gateway = IPAddress.Parse(match.Groups[1].Value);
+                                dhcpProfile.Gateway = IPAddress.Parse(match.Groups[1].Value);
                             }
                             else
                             {
@@ -261,27 +264,27 @@ namespace RaspberryPi.Network
                                 match = DnsServerRegex.Match(line);
                                 if (match.Success)
                                 {
-                                    item.DNSServer = IPAddress.Parse(match.Groups[1].Value);
+                                    dhcpProfile.DNSServer = IPAddress.Parse(match.Groups[1].Value);
                                 }
                                 else
                                 {
                                     // AP mode
                                     if (ApModeRegex.IsMatch(line))
                                     {
-                                        item.ForAP = true;
+                                        dhcpProfile.ForAP = true;
                                     }
                                 }
                             }
                         }
                     }
                 }
-                if (item != null)
+                if (dhcpProfile != null)
                 {
-                    result.Add(item);
+                    dhcpProfiles.Add(dhcpProfile);
                 }
             }
 
-            return result;
+            return dhcpProfiles;
         }
 
         /// <summary>
@@ -294,7 +297,7 @@ namespace RaspberryPi.Network
         /// <param name="dnsServer">DNS server or null if unset</param>
         /// <param name="forAP">Add extra option for AP mode</param>
         /// <returns>Asynchronous task</returns>
-        private async Task UpdateProfile(INetworkInterface iface, IPAddress ip, IPAddress subnetMask, IPAddress gateway, IPAddress dnsServer, bool forAP)
+        private async Task UpdateProfile(string iface, IPAddress ip, IPAddress subnetMask, IPAddress gateway, IPAddress dnsServer, bool forAP)
         {
             using var configStream = this.fileSystem.FileStreamFactory.Create(DhcpcdConfFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
             using var newConfigStream = new MemoryStream();
@@ -312,7 +315,7 @@ namespace RaspberryPi.Network
                             await writer.WriteLineAsync();
                         }
 
-                        await writer.WriteLineAsync($"interface {iface.Name}");
+                        await writer.WriteLineAsync($"interface {iface}");
                         if (ip != null)
                         {
                             var cidr = subnetMask != null ? subnetMask.CalculateCIDR() : DefaultCIDR;
@@ -348,7 +351,7 @@ namespace RaspberryPi.Network
                     var match = IfaceRegex.Match(line);
                     if (match.Success)
                     {
-                        if (currentInterfaceName == iface.Name)
+                        if (currentInterfaceName == iface)
                         {
                             // Profile is being changed from the one we want to modify, write the updated profile now
                             await WriteProfile(!lastLineEmpty);
@@ -359,13 +362,13 @@ namespace RaspberryPi.Network
                     }
 
                     // Write empty lines, comments, and sections which don't belong to the profile that is supposed to be updated
-                    if (currentInterfaceName != iface.Name || line.TrimStart().StartsWith("#") || string.IsNullOrWhiteSpace(line))
+                    if (currentInterfaceName != iface || line.TrimStart().StartsWith("#") || string.IsNullOrWhiteSpace(line))
                     {
                         await writer.WriteLineAsync(line);
                     }
 
                     // Only write empty line delimiters if the last line before the profile to be written was not empty
-                    if (currentInterfaceName != iface.Name)
+                    if (currentInterfaceName != iface)
                     {
                         lastLineEmpty = string.IsNullOrWhiteSpace(line);
                     }

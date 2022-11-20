@@ -47,8 +47,8 @@ namespace RaspberryPi.Tests.Services
             // Arrange
             var serviceDefinition = new ServiceDefinition("service_Name")
             {
-                ServiceDescription = "Test service description",
-                ServiceType = ServiceType.Notify,
+                Description = "Test service description",
+                Type = ServiceType.Notify,
                 WorkingDirectory = "/home/pi/directory",
                 SyslogIdentifier = "service.name",
                 ExecStart = "/home/pi/directory/executable",
@@ -63,7 +63,7 @@ namespace RaspberryPi.Tests.Services
                     "network-online.target",
                     "firewalld.service"
                 },
-                WantsServices = new[]
+                Wants = new[]
                 {
                     "network-online.target"
                 },

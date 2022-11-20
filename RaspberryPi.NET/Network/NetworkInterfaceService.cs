@@ -18,7 +18,7 @@ namespace RaspberryPi.Network
         }
 
         /// <inheritdoc/>
-        public IEnumerable<INetworkInterface> GetAllNetworkInterfaces()
+        public IEnumerable<INetworkInterface> GetAll()
         {
             return SystemNetworkInterface.GetAllNetworkInterfaces().Select(i => new NetworkInterface(i));
         }
@@ -27,7 +27,7 @@ namespace RaspberryPi.Network
         public INetworkInterface GetByIndex(int index)
         {
             var i = 0;
-            foreach (var iface in this.GetAllNetworkInterfaces())
+            foreach (var iface in this.GetAll())
             {
                 if (iface.NetworkInterfaceType != NetworkInterfaceType.Loopback && i++ == index)
                 {
@@ -40,7 +40,7 @@ namespace RaspberryPi.Network
         /// <inheritdoc/>
         public INetworkInterface GetByName(string name)
         {
-            var iface = this.GetAllNetworkInterfaces().SingleOrDefault(i => i.Name == name);
+            var iface = this.GetAll().SingleOrDefault(i => i.Name == name);
             if (iface == null)
             {
                 throw new ArgumentException($"Network connection with name \"{name}\" could not be found.", nameof(name));

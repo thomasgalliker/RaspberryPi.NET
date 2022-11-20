@@ -44,12 +44,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Remove="Network\Configurations\dhcpcd.conf" />
 		<None Remove="Network\Configurations\dnsmasq.conf" />
 		<None Remove="Network\Configurations\hostapd.conf" />
 		<None Remove="Network\Configurations\hostapd.original.conf" />
 	</ItemGroup>
 	
 	<ItemGroup>
+		<EmbeddedResource Include="Network\Configurations\dhcpcd.conf">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</EmbeddedResource>
 		<EmbeddedResource Include="Network\Configurations\dnsmasq.conf">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</EmbeddedResource>

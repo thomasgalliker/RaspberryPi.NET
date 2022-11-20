@@ -31,24 +31,30 @@ namespace RaspberryPi.Network
         private readonly ILogger logger;
         private readonly IProcessRunner processRunner;
         private readonly ISystemCtl systemCtl;
+        private readonly IServiceConfigurator serviceConfigurator;
         private readonly IWPA wpa;
         private readonly IDHCP dhcp;
         private readonly IFileSystem fileSystem;
+        private readonly INetworkInterfaceService networkInterfaceService;
 
         public AccessPoint(
             ILogger<AccessPoint> logger,
             IProcessRunner processRunner,
             ISystemCtl systemCtl,
+            IServiceConfigurator serviceConfigurator,
             IWPA wpa,
             IDHCP dhcp,
-            IFileSystem fileSystem)
+            IFileSystem fileSystem,
+            INetworkInterfaceService networkInterfaceService)
         {
             this.logger = logger;
             this.processRunner = processRunner;
             this.systemCtl = systemCtl;
+            this.serviceConfigurator = serviceConfigurator;
             this.wpa = wpa;
             this.dhcp = dhcp;
             this.fileSystem = fileSystem;
+            this.networkInterfaceService = networkInterfaceService;
         }
 
         /// <inheritdoc/>
@@ -183,7 +189,7 @@ namespace RaspberryPi.Network
         /// <param name="channel">The wifi channel number. Automatically selected if null.</param>
         /// <param name="country">The country in which this access point operates. If null, country code is read from wifi configuration.</param>
         /// <returns></returns>
-        public async Task ConfigureAsync(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel = null, Country country = null)
+        public async Task ConfigureAsync(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, INetworkInterface[] noDhcpInterfaces = null, int? channel = null, Country country = null)
         {
             if (iface == null)
             {
@@ -253,21 +259,37 @@ namespace RaspberryPi.Network
                 using var reader = new StreamReader(dnsmasqTemplateStream);
                 using var writer = this.fileSystem.FileStreamFactory.CreateStreamWriter(DnsmasqConfFilePath, FileMode.Create, FileAccess.Write);
 
-                var ip = ipAddress.GetAddressBytes();
-                var ipRangeStart = $"{ip[0]}.{ip[1]}.{ip[2]}.{(ip[3] is < 100 or > 150 ? 100 : 151)}";
-                var ipRangeEnd = $"{ip[0]}.{ip[1]}.{ip[2]}.{(ip[3] is < 100 or > 150 ? 150 : 200)}";
+                // TODO: Configurable: Range size, subnet mask, dhcp leas duration
+
+                var ipAddressBytes = ipAddress.GetAddressBytes();
+                var dhcpRangeStart = $"{ipAddressBytes[0]}.{ipAddressBytes[1]}.{ipAddressBytes[2]}.{(ipAddressBytes[3] is < 100 or > 150 ? 100 : 151)}";
+                var dhcpRangeEnd = $"{ipAddressBytes[0]}.{ipAddressBytes[1]}.{ipAddressBytes[2]}.{(ipAddressBytes[3] is < 100 or > 150 ? 150 : 200)}";
+                var dhcpRangeSubnet = IPAddress.Parse("255.255.255.0");
+                var dhcpLeaseDuration = "24h";
+
+                if (noDhcpInterfaces == null)
+                {
+                    var physicalName = iface.GetPhysicalName();
+                    var allNetworkInterfaces = this.networkInterfaceService.GetAll();
+                    noDhcpInterfaces = allNetworkInterfaces.Where(i => i.Name != physicalName).ToArray();
+                }
+
+                var interfaceValue = $"lo,{iface.Name}";
+                var noDhcpInterfaceValue = noDhcpInterfaces != null ? ConvertToCsvString(noDhcpInterfaces) : null;
 
                 while (!reader.EndOfStream)
                 {
                     var line = await reader.ReadLineAsync();
-                    line = line.Replace("{ipRangeStart}", ipRangeStart);
-                    line = line.Replace("{ipRangeEnd}", ipRangeEnd);
+                    line = line.Replace("{interface}", interfaceValue);
+                    line = line.Replace("{no-dhcp-interface}", noDhcpInterfaceValue);
+                    line = line.Replace("{dhcpRangeStart}", dhcpRangeStart);
+                    line = line.Replace("{dhcpRangeEnd}", dhcpRangeEnd);
+                    line = line.Replace("{dhcpRangeSubnet}", dhcpRangeSubnet.ToString());
+                    line = line.Replace("{dhcpLeaseDuration}", dhcpLeaseDuration);
                     line = line.Replace("{ipAddress}", ipAddress.ToString());
                     await writer.WriteLineAsync(line);
                 }
             }
-
-            this.processRunner.ExecuteCommand("sudo rfkill unblock wlan");
 
             this.logger.LogDebug($"ConfigureAsync: Writing hostapd config --> {HostapdConfFilePath}...");
 
@@ -282,21 +304,73 @@ namespace RaspberryPi.Network
                 using var reader = new StreamReader(hostapdTemplateStream);
                 using var writer = this.fileSystem.FileStreamFactory.CreateStreamWriter(HostapdConfFilePath, FileMode.Create, FileAccess.Write);
 
+                var hwMode = "g"; // TODO: Make hw_mode configurable
+
                 while (!reader.EndOfStream)
                 {
                     var line = await reader.ReadLineAsync();
+                    line = line.Replace("{interface}", iface.Name);
                     line = line.Replace("{ssid}", ssid);
-                    line = line.Replace("{countryCode}", countryCode);
+                    line = line.Replace("{hw_mode}", hwMode);
+                    line = line.Replace("{country_code}", countryCode);
                     line = line.Replace("{channel}", channelString);
                     line = line.Replace("{psk}", psk);
                     await writer.WriteLineAsync(line);
                 }
             }
 
-            //this.logger.LogDebug($"ConfigureAsync: Set IP address configuration for AP mode");
-            //await this.dhcp.SetIPAddressAsync(iface, ipAddress, null, null, null, true);
+            //this.processRunner.TryExecuteCommand($"sudo chmod 600 {HostapdConfFilePath}");
+
+            var serviceDefinition = GetServiceDefinition(iface);
+            this.serviceConfigurator.ReinstallService(serviceDefinition);
+
+            this.processRunner.TryExecuteCommand("sudo systemctl disable wpa_supplicant.service");
+
+            this.processRunner.TryExecuteCommand("sudo systemctl unmask dnsmasq.service");
+            this.processRunner.TryExecuteCommand("sudo systemctl enable dnsmasq.service");
+            this.processRunner.TryExecuteCommand("sudo systemctl stop hostapd");
+            this.processRunner.TryExecuteCommand("sudo systemctl disable hostapd");
+            this.processRunner.TryExecuteCommand("sudo systemctl enable accesspoint@wlan0.service");
+            this.processRunner.TryExecuteCommand("sudo rfkill unblock wlan");
+            this.processRunner.TryExecuteCommand("sudo systemctl daemon-reload");
 
             this.logger.LogDebug($"ConfigureAsync for ssid={ssid} finished successfully");
+        }
+
+        private static ServiceDefinition GetServiceDefinition(INetworkInterface iface)
+        {
+            var virtualName = iface.GetVirtualName();
+            var hostapdPID = "/run/hostapd.pid";
+
+            return new ServiceDefinition($"accesspoint@.service")
+            {
+                Description = $"IEEE 802.11 {virtualName}@%i AP on %i with hostapd",
+                Wants = new[]
+                {
+                    "wpa_supplicant@%i.service"
+                },
+                Type = ServiceType.Forking,
+                PIDFile = hostapdPID,
+                Restart = ServiceRestart.OnFailure,
+                RestartSec = 2,
+                Environments = new[]
+                {
+                   $"DAEMON_CONF={HostapdConfFilePath}"
+                },
+                EnvironmentFile = "-/etc/default/hostapd",
+                ExecStartPre = $"/sbin/iw dev %i interface add {virtualName}@%i type __ap",
+                ExecStart = $"/usr/sbin/hostapd -i {virtualName}@%i -P {hostapdPID} -B {HostapdConfFilePath}",
+                ExecStopPost = $"-/sbin/iw dev {virtualName}@%i del",
+                WantedBy = new[]
+                {
+                    "sys-subsystem-net-devices-%i.device"
+                },
+            };
+        }
+
+        private static string ConvertToCsvString(INetworkInterface[] noDhcpInterfaces)
+        {
+            return string.Join(",", noDhcpInterfaces.Select(i => i.Name));
         }
 
         public async Task DeleteConfigurationAsync(INetworkInterface iface)
@@ -346,6 +420,8 @@ namespace RaspberryPi.Network
 
                 var contentRegex = new Regex(@"\s*(?<PropertyName>.*):(\s*)(?<PropertyValue>.*)");
                 var matches = contentRegex.Matches(content).OfType<Match>();
+                
+                var connectedTimeSpan = TimeSpan.FromSeconds(double.Parse(RegexExtensions.ParseValue(matches, "connected time").Replace(" seconds", "")));
 
                 clients.Add(new ConnectedAccessPointClient
                 {
@@ -354,6 +430,7 @@ namespace RaspberryPi.Network
                     TxBitrate = RegexExtensions.ParseValue(matches, "tx bitrate"),
                     Authorized = RegexExtensions.ParseValueYesNo(matches, "authorized"),
                     Authenticated = RegexExtensions.ParseValueYesNo(matches, "authenticated"),
+                    ConnectedTime = connectedTimeSpan, 
                 });
             }
 

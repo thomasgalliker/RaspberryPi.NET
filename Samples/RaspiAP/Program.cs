@@ -75,12 +75,12 @@ namespace RaspiAP
                 };
                 await networkManager.SetupStationMode(wlan0, wpaSupplicantNetwork);
             }
-            else if (args.Contains("101"))
-            {
-                // Setup an access point
-                var @interface = serviceProvider.GetRequiredService<IInterface>();
-                await @interface.SetConfig(wlan0, "1.2.3.4", 0);
-            }
+            //else if (args.Contains("101"))
+            //{
+            //    // Setup an access point
+            //    var @interface = serviceProvider.GetRequiredService<IInterface>();
+            //    await @interface.SetConfig(wlan0, "1.2.3.4", 0);
+            //}
             else if (args.Contains("102"))
             {
                 var ssid = "testssid";
@@ -89,7 +89,7 @@ namespace RaspiAP
                 var channel = 6;
                 var country = Countries.Switzerland;
 
-                await networkManager.SetupAccessPoint(wlan0, ssid, psk, ipAddress, channel, country);
+                await networkManager.SetupAccessPoint2(wlan0, ssid, psk, ipAddress, channel, country);
             }
             else if (args.Contains("103"))
             {
@@ -99,12 +99,16 @@ namespace RaspiAP
             }
             else if (args.Contains("104"))
             {
-                var connectedClients = accessPoint.GetConnectedClients(wlan0).ToList();
-                Console.WriteLine($"# connected clients: {connectedClients.Count}");
-                foreach (var connectedClient in connectedClients)
+                foreach (var iface in networkInterfaceService.GetAll())
                 {
-                    Console.WriteLine($"client: MacAddress={connectedClient.MacAddress}");
+                    var connectedClients = accessPoint.GetConnectedClients(iface).ToList();
+                    Console.WriteLine($"{iface.Name}: # connected clients: {connectedClients.Count}");
+                    foreach (var connectedClient in connectedClients)
+                    {
+                        Console.WriteLine($"client: MacAddress={connectedClient.MacAddress}, connected time: {connectedClient.ConnectedTime}");
+                    }
                 }
+               
             }
 
             //Console.ReadKey();

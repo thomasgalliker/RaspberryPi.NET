@@ -12,6 +12,11 @@ namespace RaspberryPi.Tests.Utils
             this.rootPath = rootPath;
         }
 
+        public void Create(string path)
+        {
+            System.IO.File.Create(this.Combine(path));
+        }
+
         public void Delete(string path)
         {
             System.IO.File.Delete(this.Combine(path));
