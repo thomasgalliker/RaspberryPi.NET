@@ -22,6 +22,7 @@ namespace RaspberryPi.Network
         private static readonly string[] NewLineChars = new string[] { "\n", "\r\n" };
         private const int PskMinLength = 8;
         private const int PskMaxLength = 64;
+        internal const string AccessPointServiceName = "accesspoint@.service";
         internal const string HostapdServiceName = "hostapd";
         internal const string HostapdConfFilePath = "/etc/hostapd/hostapd.conf";
         internal const string DnsmasqServiceName = "dnsmasq";
@@ -342,7 +343,7 @@ namespace RaspberryPi.Network
             var virtualName = iface.GetVirtualName();
             var hostapdPID = "/run/hostapd.pid";
 
-            return new ServiceDefinition($"accesspoint@.service")
+            return new ServiceDefinition(AccessPointServiceName)
             {
                 Description = $"IEEE 802.11 {virtualName}@%i AP on %i with hostapd",
                 Wants = new[]

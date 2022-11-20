@@ -21,6 +21,7 @@ using RaspberryPi.Tests.TestData;
 using RaspberryPi.Tests.Utils;
 using Xunit;
 using Xunit.Abstractions;
+using NetworkInterface = RaspberryPi.Network.NetworkInterface;
 
 namespace RaspberryPi.Tests.Network
 {
@@ -31,6 +32,7 @@ namespace RaspberryPi.Tests.Network
 
         public AccessPointTests(ITestOutputHelper testOutputHelper)
         {
+            this.testOutputHelper = testOutputHelper;
             this.autoMocker = new AutoMocker();
             this.autoMocker.Use<ILogger<AccessPoint>>(new TestOutputHelperLogger<AccessPoint>(testOutputHelper));
 
@@ -51,7 +53,10 @@ namespace RaspberryPi.Tests.Network
             var processRunnerMock = this.autoMocker.GetMock<IProcessRunner>();
             processRunnerMock.Setup(p => p.ExecuteCommand(It.IsAny<CommandLineInvocation>(), It.IsAny<CancellationToken>()))
                 .Returns(CommandLineResult.SuccessResult);
-            this.testOutputHelper = testOutputHelper;
+
+            var networkInterfaceServiceMock = this.autoMocker.GetMock<INetworkInterfaceService>();
+            networkInterfaceServiceMock.Setup(n => n.GetAll())
+                .Returns(NetworkInterfaces.GetRapsberryPi4Interfaces().Select(i => i.Object));
         }
 
         [Fact]
@@ -121,12 +126,12 @@ namespace RaspberryPi.Tests.Network
             wpaMock.Setup(w => w.GetConfigAsync())
                 .ReturnsAsync(WPASupplicantConfs.GetWPASupplicantConf_testssid());
 
-            var ifaceMock = NetworkInterfaces.GetWlan0();
+            var iface = new NetworkInterface("ap@wlan0");
 
             var accessPoint = this.autoMocker.CreateInstance<AccessPoint>();
 
             // Act
-            await accessPoint.ConfigureAsync(ifaceMock.Object, "testssid", "testpassword", IPAddress.Parse("192.168.50.100"), null, 6);
+            await accessPoint.ConfigureAsync(iface, "testssid", "testpassword", IPAddress.Parse("192.168.50.100"), null, 6);
 
             // Assert
             fileSystemMock.Verify(f => f.FileStreamFactory.CreateStreamWriter(AccessPoint.HostapdConfFilePath, FileMode.Create, FileAccess.Write), Times.Once);
@@ -135,8 +140,9 @@ namespace RaspberryPi.Tests.Network
             fileSystemMock.Verify(f => f.Directory.Exists(@"\etc\hostapd"), Times.Once);
             fileSystemMock.VerifyNoOtherCalls();
 
-            processRunnerMock.Verify(p => p.ExecuteCommand("sudo rfkill unblock wlan", It.IsAny<CancellationToken>()), Times.Once);
-            processRunnerMock.VerifyNoOtherCalls();
+            processRunnerMock.Verify(p => p.TryExecuteCommand("sudo rfkill unblock wlan", It.IsAny<CancellationToken>()), Times.Once);
+            processRunnerMock.Verify(p => p.TryExecuteCommand("sudo systemctl daemon-reload", It.IsAny<CancellationToken>()), Times.Once);
+            //processRunnerMock.VerifyNoOtherCalls();
 
             wpaMock.Verify(w => w.GetConfigAsync(), Times.Once);
             wpaMock.VerifyNoOtherCalls();
@@ -156,8 +162,8 @@ namespace RaspberryPi.Tests.Network
             hostapdStreamWriterMock.Verify(a => a.WriteLineAsync("channel=6"), Times.Once);
             hostapdStreamWriterMock.Verify(a => a.WriteLineAsync("wpa_passphrase=testpassword"), Times.Once);
 
-            dnsmasqStreamWriterMock.Verify(a => a.WriteLineAsync("interface=wlan0"), Times.Once);
-            dnsmasqStreamWriterMock.Verify(a => a.WriteLineAsync("no-dhcp-interface=eth0"), Times.Once);
+            dnsmasqStreamWriterMock.Verify(a => a.WriteLineAsync("interface=lo,ap@wlan0"), Times.Once);
+            dnsmasqStreamWriterMock.Verify(a => a.WriteLineAsync("no-dhcp-interface=lo,eth0"), Times.Once);
             dnsmasqStreamWriterMock.Verify(a => a.WriteLineAsync("dhcp-range=192.168.50.151,192.168.50.200,255.255.255.0,24h"), Times.Once);
             dnsmasqStreamWriterMock.Verify(a => a.WriteLineAsync("dhcp-option=option:dns-server,192.168.50.100"), Times.Once);
         }

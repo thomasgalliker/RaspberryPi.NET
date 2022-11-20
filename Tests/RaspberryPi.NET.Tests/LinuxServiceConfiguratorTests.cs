@@ -123,6 +123,7 @@ namespace RaspberryPi.Tests
 
             systemCtl.Verify(s => s.StopService(ServiceName), Times.Once);
             systemCtl.Verify(s => s.DisableService(ServiceName), Times.Once);
+            systemCtl.Verify(s => s.MaskService(ServiceName), Times.Once);
             systemCtl.Verify(s => s.EnableService(ServiceName), Times.Once);
             systemCtl.VerifyNoOtherCalls();
         }
@@ -150,6 +151,7 @@ namespace RaspberryPi.Tests
 
             systemCtl.Verify(s => s.StopService(ServiceName), Times.Once);
             systemCtl.Verify(s => s.DisableService(ServiceName), Times.Once);
+            systemCtl.Verify(s => s.MaskService(ServiceName), Times.Once);
             systemCtl.VerifyNoOtherCalls();
         }
 

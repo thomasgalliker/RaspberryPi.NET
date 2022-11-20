@@ -35,10 +35,7 @@ namespace RaspberryPi.Tests.Services
                 "\r\n" +
                 "[Service]\r\n" +
                 "Type=oneshot\r\n" +
-                "SyslogIdentifier=service.Name\r\n" +
-                "\r\n" +
-                "[Install]\r\n" +
-                "WantedBy=multi-user.target");
+                "SyslogIdentifier=service.Name");
         }
 
         [Fact]
@@ -72,6 +69,10 @@ namespace RaspberryPi.Tests.Services
                     "ASPNETCORE_ENVIRONMENT=Production",
                     "DOTNET_PRINT_TELEMETRY_MESSAGE=false",
                     "DOTNET_ROOT=/home/pi/.dotnet"
+                },
+                WantedBy = new[]
+                {
+                    "multi-user.target"
                 }
             };
 
