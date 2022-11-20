@@ -1,8 +1,12 @@
 {
   "profiles": {
-    "RaspiAP": {
+    "RaspiAP_AccessPoint": {
       "commandName": "Project",
-      "commandLineArgs": "0"
+      "commandLineArgs": "--ap \"ap_ssid\" \"ap_passphrase\" --country \"CH\""
+    },
+    "RaspiAP_Client": {
+      "commandName": "Project",
+      "commandLineArgs": "--client \"client_ssid\" \"client_passphrase\" --country \"CH\""
     }
   }
 }

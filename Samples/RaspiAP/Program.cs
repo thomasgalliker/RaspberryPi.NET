@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Globalization;
-using System.Linq;
-using System.Net;
-using System.Reflection;
+using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Parsing;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using RaspberryPi;
+using NuGetUtils.CLI.Extensions;
 using RaspberryPi.Extensions;
-using RaspberryPi.Network;
+using RaspiAP.Commands;
 
 namespace RaspiAP
 {
@@ -16,103 +15,71 @@ namespace RaspiAP
     {
         private static async Task<int> Main(string[] args)
         {
-            var assemblyVersion = Assembly.GetExecutingAssembly()
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-                .InformationalVersion;
+            var assembly = typeof(Program).Assembly;
+            var assemblyName = assembly.GetName();
 
             Console.WriteLine(
-                $"RaspiAP version {assemblyVersion} {Environment.NewLine}" +
+                $"{assemblyName.Name} version {assemblyName.Version} {Environment.NewLine}" +
                 $"Copyright(C) superdev GmbH. All rights reserved.{Environment.NewLine}");
-
-            //var osplatform = RuntimeInformationHelper.GetOperatingSystem();
-            //if (osplatform != OSPlatform.Linux)
-            //{
-            //    Console.WriteLine($"This program only runs on RaspberryPi. OSPlatform \"{osplatform}\" is not supported.");
-            //    return -1;
-            //}
 
             TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-            // This sample console app runs with Microsoft.Extensions.DependencyInjection.
-            // However, you can also manually construct the dependency trees if you wish so.
-            var serviceCollection = new ServiceCollection();
+            var serviceProvider = BuildServiceProvider();
+            var parser = BuildParser(serviceProvider);
+            var result = await parser.InvokeAsync(args).ConfigureAwait(false);
 
-            var dateTimeFormat = CultureInfo.CurrentCulture.DateTimeFormat;
-            serviceCollection.AddLogging(o =>
+            if (args.Length == 0)
             {
-                o.ClearProviders();
-                o.SetMinimumLevel(LogLevel.Debug);
-                o.AddSimpleConsole(c =>
+                result = await parser.RunInteractiveMode();
+            }
+
+            return result;
+        }
+
+        private static Parser BuildParser(IServiceProvider serviceProvider)
+        {
+            var rootCommand = new RootCommand();
+            rootCommand.Description = $"Configures wifi access point and station mode on Raspberry Pi";
+
+            //rootCommand.AddGlobalOption(CommonOptions.SilentOption);
+
+            var commandLineBuilder = new CommandLineBuilder(rootCommand);
+
+            var commands = serviceProvider.GetServices<Command>();
+            foreach (var command in commands)
+            {
+                commandLineBuilder.Command.Add(command);
+            }
+
+            return commandLineBuilder
+                .UseDefaults()
+                .Build();
+        }
+
+        private static IServiceProvider BuildServiceProvider()
+        {
+            var services = new ServiceCollection();
+
+            services.AddLogging(configure =>
+            {
+                configure.ClearProviders();
+                configure.SetMinimumLevel(LogLevel.Debug);
+                configure.AddDebug();
+                configure.AddSimpleConsole(o =>
                 {
-                    c.TimestampFormat = $"{dateTimeFormat.ShortDatePattern} {dateTimeFormat.LongTimePattern} ";
-                })
-                .AddDebug();
+                    o.SingleLine = false;
+                    o.TimestampFormat = "hh:mm:ss ";
+                });
             });
-            serviceCollection.AddRaspberryPi();
-            var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            //Console.ReadKey();
+            services.AddSingleton<Command, AccessPointCommand>();
+            services.AddSingleton<Command, StationModeCommand>();
+            services.AddSingleton<Command, ScanCommand>();
+            services.AddSingleton<Command, StatusCommand>();
+            services.AddRaspberryPi();
 
-            var networkInterfaceService = serviceProvider.GetRequiredService<INetworkInterfaceService>();
-            var wlan0 = networkInterfaceService.GetByName("wlan0");
-
-            var wpa = serviceProvider.GetRequiredService<IWPA>();
-            var accessPoint = serviceProvider.GetRequiredService<IAccessPoint>();
-            var networkManager = serviceProvider.GetRequiredService<INetworkManager>();
-
-            if (args.Contains("99"))
-            {
-                var ssids = wpa.ScanSSIDs(wlan0).ToList();
-                Console.WriteLine(string.Join(Environment.NewLine, ssids.Select(s => $"{s}")));
-            }
-            else if (args.Contains("100"))
-            {
-                var wpaSupplicantNetwork = new WPASupplicantNetwork
-                {
-                    SSID = "galliker",
-                    PSK = "abcdefg12345678",
-                };
-                await networkManager.SetupStationMode(wlan0, wpaSupplicantNetwork);
-            }
-            //else if (args.Contains("101"))
-            //{
-            //    // Setup an access point
-            //    var @interface = serviceProvider.GetRequiredService<IInterface>();
-            //    await @interface.SetConfig(wlan0, "1.2.3.4", 0);
-            //}
-            else if (args.Contains("102"))
-            {
-                var ssid = "testssid";
-                var psk = "testpassword";
-                var ipAddress = IPAddress.Parse("192.168.99.1");
-                var channel = 6;
-                var country = Countries.Switzerland;
-
-                await networkManager.SetupAccessPoint2(wlan0, ssid, psk, ipAddress, channel, country);
-            }
-            else if (args.Contains("103"))
-            {
-                var @interface = serviceProvider.GetRequiredService<IInterface>();
-                var report = await @interface.ReportAsync(wlan0);
-                Console.WriteLine(report);
-            }
-            else if (args.Contains("104"))
-            {
-                foreach (var iface in networkInterfaceService.GetAll())
-                {
-                    var connectedClients = accessPoint.GetConnectedClients(iface).ToList();
-                    Console.WriteLine($"{iface.Name}: # connected clients: {connectedClients.Count}");
-                    foreach (var connectedClient in connectedClients)
-                    {
-                        Console.WriteLine($"client: MacAddress={connectedClient.MacAddress}, connected time: {connectedClient.ConnectedTime}");
-                    }
-                }
-               
-            }
-
-            //Console.ReadKey();
-            return 0;
+            return services.BuildServiceProvider();
         }
 
         private static void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)

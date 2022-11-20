@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RaspberryPi.Process;
@@ -50,6 +51,11 @@ namespace RaspberryPi.Network
 
         public async Task SetupAccessPoint2(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel, Country country)
         {
+            if (iface == null)
+            {
+                throw new ArgumentNullException(nameof(iface));
+            }
+
             var ifaceAP = new NetworkInterface($"ap@{iface.Name}");
             this.logger.LogDebug($"SetupAccessPoint: iface={ifaceAP}, ssid={ssid}");
 
@@ -78,7 +84,7 @@ namespace RaspberryPi.Network
         }
 
         /// <inheritdoc />
-        public async Task SetupStationMode(INetworkInterface iface, WPASupplicantNetwork network)
+        public async Task SetupStationMode(INetworkInterface iface, WPASupplicantNetwork network, Country country = null)
         {
             // https://raspberrypi.stackexchange.com/questions/117819/configure-back-to-normal-wifi-station-after-access-point-mode-hostapd
 
@@ -90,6 +96,16 @@ namespace RaspberryPi.Network
             await this.dhcp.SetIPAddressAsync(iface, null, null, null, null, null);
 
             await this.wpa.AddOrUpdateNetworkAsync(network);
+
+            if (country != null)
+            {
+                var config = await this.wpa.GetConfigAsync();
+                if (config.Country != country)
+                {
+                    config.Country = country;
+                    await this.wpa.SetConfigAsync(config);
+                }
+            }
 
             await Task.Delay(1000);
 

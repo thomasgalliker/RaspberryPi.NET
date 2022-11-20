@@ -11,6 +11,6 @@ namespace RaspberryPi.Network
         
         Task SetupAccessPoint2(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel, Country country);
         
-        Task SetupStationMode(INetworkInterface iface, WPASupplicantNetwork network);
+        Task SetupStationMode(INetworkInterface iface, WPASupplicantNetwork network, Country country = null);
     }
 }

@@ -5,7 +5,7 @@ namespace RaspberryPi.Process
 {
     internal class NullProcessRunner : IProcessRunner
     {
-        private readonly ILogger<NullProcessRunner> logger;
+        private readonly ILogger logger;
 
         public NullProcessRunner(ILogger<NullProcessRunner> logger)
         {

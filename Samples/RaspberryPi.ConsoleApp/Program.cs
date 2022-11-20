@@ -19,7 +19,7 @@ internal partial class Program
             $"RaspberryPi.ConsoleApp version {assemblyVersion} {Environment.NewLine}" +
             $"Copyright(C) superdev GmbH. All rights reserved.{Environment.NewLine}");
 
-        var osplatform = RuntimeInformationHelper.GetOperatingSystem();
+        var osplatform = OperatingSystemHelper.GetOperatingSystem();
         if (osplatform != OSPlatform.Linux)
         {
             Console.WriteLine($"This program only runs on RaspberryPi. OSPlatform \"{osplatform}\" is not supported.");
