@@ -18,6 +18,7 @@ using Xunit.Abstractions;
 
 namespace RaspberryPi.Tests.Network
 {
+    [Trait("Category", "IntegrationTests")]
     public class NetworkManagerIntegrationTests
     {
         private readonly AutoMocker autoMocker;
