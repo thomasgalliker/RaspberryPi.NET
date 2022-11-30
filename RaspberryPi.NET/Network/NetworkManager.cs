@@ -34,20 +34,20 @@ namespace RaspberryPi.Network
         }
 
         /// <inheritdoc />
-        public async Task SetupAccessPoint(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel, Country country)
-        {
-            this.logger.LogDebug($"SetupAccessPoint: iface={iface.Name}, ssid={ssid}");
+        //public async Task SetupAccessPoint(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel, Country country)
+        //{
+        //    this.logger.LogDebug($"SetupAccessPoint: iface={iface.Name}, ssid={ssid}");
 
-            await this.dhcp.SetIPAddressAsync(iface, ipAddress, null, null, null, forAP: true);
+        //    await this.dhcp.SetIPAddressAsync(iface, ipAddress, null, null, null, forAP: true);
 
-            await this.accessPoint.ConfigureAsync(iface, ssid, psk, ipAddress, null, channel, country);
+        //    await this.accessPoint.ConfigureAsync(iface, ssid, psk, ipAddress, null, channel, country);
 
-            //this.wpa.Stop();
+        //    //this.wpa.Stop();
 
-            //this.networkInterfaceService.SetLinkDown(iface); // TODO: REALLY???
+        //    //this.networkInterfaceService.SetLinkDown(iface); // TODO: REALLY???
 
-            await this.accessPoint.RestartAsync();
-        }
+        //    await this.accessPoint.RestartAsync();
+        //}
 
         public async Task SetupAccessPoint2(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel, Country country)
         {
