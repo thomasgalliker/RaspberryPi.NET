@@ -69,7 +69,7 @@ namespace RaspberryPi.Tests.Network
             var country = Countries.Switzerland;
 
             // Act
-            await networkManager.SetupAccessPoint2(ifaceMock.Object, ssid, psk, ipAddress, channel, country);
+            await networkManager.SetupAccessPoint(ifaceMock.Object, ssid, psk, ipAddress, channel, country);
 
             // Assert
             //var isAPConfigured = await dhcp.IsAPConfiguredAsync();

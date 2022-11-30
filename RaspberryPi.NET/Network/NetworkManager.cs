@@ -49,7 +49,7 @@ namespace RaspberryPi.Network
         //    await this.accessPoint.RestartAsync();
         //}
 
-        public async Task SetupAccessPoint2(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel, Country country)
+        public async Task SetupAccessPoint(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel, Country country)
         {
             if (iface == null)
             {

@@ -75,7 +75,7 @@ namespace RaspiAP.Commands
                     iface = this.networkInterfaceService.GetByName("wlan0");
                 }
 
-                await this.networkManager.SetupAccessPoint2(iface, ssid, passphrase, ipAddress, channel, country);
+                await this.networkManager.SetupAccessPoint(iface, ssid, passphrase, ipAddress, channel, country);
 
                 return 0;
             }
