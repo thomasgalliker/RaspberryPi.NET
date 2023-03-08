@@ -9,14 +9,14 @@ namespace RaspberryPi
             this.Processors = new List<ProcessorInfo>();
         }
 
-        public IReadOnlyCollection<ProcessorInfo> Processors { get; internal set; }
+        public IReadOnlyCollection<ProcessorInfo> Processors { get; set; }
 
-        public string Hardware { get; internal set; }
+        public string Hardware { get; set; }
 
-        public string Revision { get; internal set; }
+        public string Revision { get; set; }
 
-        public string Serial { get; internal set; }
+        public string Serial { get; set; }
 
-        public string Model { get; internal set; }
+        public string Model { get; set; }
     }
 }

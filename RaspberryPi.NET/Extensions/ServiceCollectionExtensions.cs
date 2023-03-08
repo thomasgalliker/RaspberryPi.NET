@@ -22,12 +22,14 @@ namespace RaspberryPi.Extensions
             {
                 services.AddSingleton<IProcessRunner, ProcessRunner>();
                 services.AddSingleton<IServiceConfigurator, LinuxServiceConfigurator>();
+                services.AddSingleton<ISystemInfoService, SystemInfoService>();
             }
             //#if DEBUG
             else if (osplatform == OSPlatform.Windows)
             {
                 services.AddSingleton<IProcessRunner, NullProcessRunner>();
                 services.AddSingleton<IServiceConfigurator, NullServiceConfigurator>();
+                services.AddSingleton<ISystemInfoService, NullSystemInfoService>();
             }
             //#endif
             else if (omitPlatformCheck == false)
@@ -55,7 +57,6 @@ namespace RaspberryPi.Extensions
             services.AddSingleton<IFileSystem, FileSystem>();
 
             // System
-            services.AddSingleton<ISystemInfoService, SystemInfoService>();
         }
     }
 }

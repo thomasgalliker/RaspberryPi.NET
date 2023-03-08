@@ -2,8 +2,6 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Linq;
-using System.Net.NetworkInformation;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using RaspberryPi.Network;
 
@@ -37,7 +35,7 @@ namespace RaspiAP.Commands
                 return 0;
             }
 
-            public async Task<int> InvokeAsync(InvocationContext context)
+            public Task<int> InvokeAsync(InvocationContext context)
             {
                 foreach (var iface in this.networkInterfaceService.GetAll())
                 {
@@ -49,7 +47,7 @@ namespace RaspiAP.Commands
                     }
                 }
 
-                return 0;
+                return Task.FromResult(0);
             }
         }
     }
