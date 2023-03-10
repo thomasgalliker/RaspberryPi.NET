@@ -1,16 +1,19 @@
-﻿namespace RaspberryPi
+﻿
+using UnitsNet;
+
+namespace RaspberryPi
 {
     public class CpuSensorsStatus
     {
         /// <summary>
         /// Gets or sets the CPU temperature in °C.
         /// </summary>
-        public double Temperature { get; set; }
+        public Temperature Temperature { get; set; }
 
         /// <summary>
         /// Gets or sets the CPU voltage in volts.
         /// </summary>
-        public double Voltage { get; set; }
+        public ElectricPotential Voltage { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the CPU is in under voltage.

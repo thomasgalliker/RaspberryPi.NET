@@ -9,6 +9,7 @@ using RaspberryPi.Process;
 using RaspberryPi.Storage;
 using RaspberryPi.Tests.Logging;
 using RaspberryPi.Tests.TestData;
+using UnitsNet;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -126,8 +127,8 @@ namespace RaspberryPi.Tests
             cpuSensorsStatus.Should().BeEquivalentTo(
                 new CpuSensorsStatus
                 {
-                    Temperature = 34.9d,
-                    Voltage = 1.25d,
+                    Temperature = Temperature.FromDegreesCelsius(34.9d),
+                    Voltage = ElectricPotential.FromVolts(1.25d),
                     UnderVoltageDetected = true,
                     ArmFrequencyCapped = false,
                     CurrentlyThrottled = true,

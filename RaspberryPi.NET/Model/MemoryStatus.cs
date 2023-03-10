@@ -1,11 +1,13 @@
-﻿namespace RaspberryPi
+﻿using UnitsNet;
+
+namespace RaspberryPi
 {
     public class MemoryStatus
     {
-        public int Total { get; set; }
+        public Information Total { get; set; }
 
-        public int Used { get; set; }
+        public Information Used { get; set; }
 
-        public int Free { get; set; }
+        public Information Free { get; set; }
     }
 }

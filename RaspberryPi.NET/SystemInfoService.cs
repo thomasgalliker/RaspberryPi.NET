@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using RaspberryPi.Extensions;
 using RaspberryPi.Process;
+using UnitsNet;
 
 namespace RaspberryPi
 {
@@ -198,8 +199,8 @@ namespace RaspberryPi
 
             return new CpuSensorsStatus
             {
-                Temperature = temperature,
-                Voltage = voltage,
+                Temperature = Temperature.FromDegreesCelsius(temperature),
+                Voltage = ElectricPotential.FromVolts(voltage),
                 UnderVoltageDetected = binaryLength > 0 && '1'.Equals(getThrottledInBinary[binaryLength - 1]),
                 ArmFrequencyCapped = binaryLength > 1 && '1'.Equals(getThrottledInBinary[binaryLength - 2]),
                 CurrentlyThrottled = binaryLength > 2 && '1'.Equals(getThrottledInBinary[binaryLength - 3]),
@@ -238,13 +239,13 @@ namespace RaspberryPi
 
             return new RandomAccessMemoryStatus
             {
-                Total = total,
-                Used = used,
-                Free = free,
-                Shared = shared,
-                Buffers = buffers,
-                Cache = cache,
-                Available = available
+                Total = Information.FromBytes(total),
+                Used = Information.FromBytes(used),
+                Free = Information.FromBytes(free),
+                Shared = Information.FromBytes(shared),
+                Buffers = Information.FromBytes(buffers),
+                Cache = Information.FromBytes(cache),
+                Available = Information.FromBytes(available),
             };
         }
 
@@ -257,9 +258,9 @@ namespace RaspberryPi
 
             return new MemoryStatus
             {
-                Total = total,
-                Used = used,
-                Free = free,
+                Total = Information.FromBytes(total),
+                Used = Information.FromBytes(used),
+                Free = Information.FromBytes(free),
             };
         }
 
