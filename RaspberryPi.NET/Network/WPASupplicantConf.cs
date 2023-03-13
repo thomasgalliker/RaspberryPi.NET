@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace RaspberryPi.Network
@@ -26,6 +27,7 @@ namespace RaspberryPi.Network
         public WPASupplicantConf(string content)
         {
             // TODO: Parse content
+            throw new NotImplementedException();
         }
 
         public string CtrlInterface { get; set; }
