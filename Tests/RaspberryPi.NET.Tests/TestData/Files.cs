@@ -43,6 +43,11 @@ namespace RaspberryPi.Tests.TestData
             return ResourceLoader.Current.GetEmbeddedResourceString(Assembly, "iwlist_wlan0_scan.txt");
         }
         
+        public static string GetIwgetid()
+        {
+            return ResourceLoader.Current.GetEmbeddedResourceString(Assembly, "iwgetid.txt");
+        }
+        
         public static string GetIwDevWlan0StationDump()
         {
             return ResourceLoader.Current.GetEmbeddedResourceString(Assembly, "iw_dev_wlan0_station_dump.txt");

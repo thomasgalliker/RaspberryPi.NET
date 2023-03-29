@@ -99,11 +99,11 @@ namespace RaspberryPi.Network
 
             if (country != null)
             {
-                var config = await this.wpa.GetConfigAsync();
+                var config = await this.wpa.GetWPASupplicantConfAsync();
                 if (config.Country != country)
                 {
                     config.Country = country;
-                    await this.wpa.SetConfigAsync(config);
+                    await this.wpa.SetWPASupplicantConfAsync(config);
                 }
             }
 

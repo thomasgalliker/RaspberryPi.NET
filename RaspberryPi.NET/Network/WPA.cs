@@ -103,6 +103,30 @@ namespace RaspberryPi.Network
         }
 
         /// <inheritdoc/>
+        public IEnumerable<string> GetConnectedSSIDs()
+        {
+            var commandLineResult = this.processRunner.ExecuteCommand($"iwgetid -r");
+
+            return commandLineResult.OutputData
+                .Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<string> GetConnectedSSIDs(INetworkInterface iface)
+        {
+            if (iface == null)
+            {
+                throw new ArgumentNullException($"Parameter '{nameof(iface)}' must not be null", nameof(iface));
+            }
+
+            var commandLineResult = this.processRunner.ExecuteCommand($"iwgetid {iface.Name} -r");
+
+            return commandLineResult.OutputData
+                .Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        [Obsolete("Use GetWPASupplicantConfAsync")]
+        /// <inheritdoc/>
         public async Task<IEnumerable<string>> GetSSIDsAsync()
         {
             var ssids = new List<string>();
@@ -215,9 +239,9 @@ namespace RaspberryPi.Network
         }
 
         /// <inheritdoc/>
-        public async Task<WPASupplicantConf> GetConfigAsync()
+        public async Task<WPASupplicantConf> GetWPASupplicantConfAsync()
         {
-            this.logger.LogDebug("GetConfigAsync");
+            this.logger.LogDebug("GetWPASupplicantConfAsync");
 
             // Source: https://github.com/snowdayclub/rpi-wifisetup-ble/blob/5bc236a90fa6c8ccaebef845d62c526fa2b487d2/wpamanager.py
 
@@ -318,9 +342,9 @@ namespace RaspberryPi.Network
         }
 
         /// <inheritdoc/>
-        public async Task SetConfigAsync(WPASupplicantConf conf)
+        public async Task SetWPASupplicantConfAsync(WPASupplicantConf conf)
         {
-            this.logger.LogDebug("SetConfigAsync");
+            this.logger.LogDebug("SetWPASupplicantConfAsync");
 
             if (conf == null)
             {
@@ -440,12 +464,12 @@ namespace RaspberryPi.Network
             // Restart the service to apply the new configuration
             this.Restart();
 
-            this.logger.LogDebug($"SetConfigAsync finished successfully");
+            this.logger.LogDebug($"SetWPASupplicantConfAsync finished successfully");
         }
 
         public async Task<WPASupplicantNetwork> GetNetworkAsync(string ssid)
         {
-            var conf = await this.GetConfigAsync();
+            var conf = await this.GetWPASupplicantConfAsync();
             conf ??= new WPASupplicantConf();
 
             var network = conf.Networks.SingleOrDefault(n => n.SSID == ssid);
@@ -457,7 +481,7 @@ namespace RaspberryPi.Network
         {
             this.logger.LogDebug($"AddOrUpdateNetworkAsync: ssid={network.SSID}");
 
-            var conf = await this.GetConfigAsync();
+            var conf = await this.GetWPASupplicantConfAsync();
             conf ??= new WPASupplicantConf();
 
             var existingNetwork = conf.Networks.SingleOrDefault(n => n.SSID == network.SSID);
@@ -468,7 +492,7 @@ namespace RaspberryPi.Network
 
             conf.Networks.Add(network);
 
-            await this.SetConfigAsync(conf);
+            await this.SetWPASupplicantConfAsync(conf);
         }
 
         /// <inheritdoc/>
@@ -476,7 +500,7 @@ namespace RaspberryPi.Network
         {
             this.logger.LogDebug($"RemoveNetworkAsync: ssid={network.SSID}");
 
-            var conf = await this.GetConfigAsync();
+            var conf = await this.GetWPASupplicantConfAsync();
             conf ??= new WPASupplicantConf();
 
             var existingNetwork = conf.Networks.SingleOrDefault(n => n.SSID == network.SSID);
@@ -487,7 +511,7 @@ namespace RaspberryPi.Network
 
             conf.Networks.Remove(existingNetwork);
 
-            await this.SetConfigAsync(conf);
+            await this.SetWPASupplicantConfAsync(conf);
         }
 
         private static bool ConvertIntStringToBool(string disabled)

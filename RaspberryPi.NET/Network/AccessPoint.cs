@@ -230,7 +230,7 @@ namespace RaspberryPi.Network
             }
             else
             {
-                var wpaSupplicantConf = await this.wpa.GetConfigAsync();
+                var wpaSupplicantConf = await this.wpa.GetWPASupplicantConfAsync();
                 countryCode = wpaSupplicantConf.Country.Alpha2;
             }
 
@@ -437,6 +437,5 @@ namespace RaspberryPi.Network
 
             return clients;
         }
-
     }
 }

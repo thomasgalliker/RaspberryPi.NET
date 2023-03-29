@@ -13,6 +13,7 @@
 	  <None Remove="TestData\dhcpcd.conf" />
 	  <None Remove="TestData\free.txt" />
 	  <None Remove="TestData\hostinfo.txt" />
+	  <None Remove="TestData\iwgetid.txt" />
 	  <None Remove="TestData\iwlist_wlan0_scan.txt" />
 	  <None Remove="TestData\iw_dev_wlan0_station_dump.txt" />
 	  <None Remove="TestData\iw_list.txt" />
@@ -22,6 +23,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <EmbeddedResource Include="TestData\iwgetid.txt" />
 	  <EmbeddedResource Include="TestData\iw_wlan0_info.txt" />
 	  <EmbeddedResource Include="TestData\iw_list.txt" />
 	  <EmbeddedResource Include="TestData\free.txt" />

@@ -28,6 +28,18 @@ namespace RaspberryPi.Network
         void Stop();
 
         /// <summary>
+        /// Returns the SSIDs of all interfaces (if connected to any wireless network).
+        /// </summary>
+        /// <returns>The list of SSIDs.</returns>
+        IEnumerable<string> GetConnectedSSIDs();
+
+        /// <summary>
+        /// Returns the SSIDs of interface '<paramref name="iface"/>' (if connected to any wireless network).
+        /// </summary>
+        /// <returns>The list of SSIDs.</returns>
+        IEnumerable<string> GetConnectedSSIDs(INetworkInterface iface);
+
+        /// <summary>
         /// Scans the area for available wireless networks.
         /// </summary>
         /// <returns>List of SSIDs available to connect.</returns>
@@ -37,13 +49,13 @@ namespace RaspberryPi.Network
         /// Gets the current wpa_supplicant.conf.
         /// </summary>
         /// <returns>The wpa_supplicant.conf.</returns>
-        Task<WPASupplicantConf> GetConfigAsync();
+        Task<WPASupplicantConf> GetWPASupplicantConfAsync();
 
         /// <summary>
         /// Sets the wpa_supplicant.conf with the given <paramref name="config"/>.
         /// </summary>
         /// <param name="config">The updated wpa_supplicant.conf.</param>
-        Task SetConfigAsync(WPASupplicantConf config);
+        Task SetWPASupplicantConfAsync(WPASupplicantConf config);
 
         /// <summary>
         /// Returns the network with <paramref name="ssid"/> from wpa_supplicant.conf.

@@ -53,6 +53,28 @@ namespace RaspberryPi.Tests.Network
         }
 
         [Fact]
+        public void ShouldGetConnectedSSIDs()
+        {
+            // Arrange
+            var iwgetid = Files.GetIwgetid();
+
+            var processRunnerMock = this.autoMocker.GetMock<IProcessRunner>();
+            processRunnerMock.Setup(p => p.ExecuteCommand("iwgetid -r", It.IsAny<CancellationToken>()))
+                .Returns(new CommandLineResult(0, iwgetid, null));
+
+            var systemCtlMock = this.autoMocker.GetMock<ISystemCtl>();
+
+            var wpa = this.autoMocker.CreateInstance<WPA>();
+
+            // Act
+            var ssids = wpa.GetConnectedSSIDs();
+
+            // Assert
+            ssids.Should().HaveCount(1);
+            ssids.ElementAt(0).Should().Be("testssid");
+        }
+
+        [Fact]
         public async Task ShouldGetSSIDs()
         {
             // Arrange
@@ -103,7 +125,7 @@ namespace RaspberryPi.Tests.Network
         }
 
         [Fact]
-        public async Task ShouldGetConfigAsync()
+        public async Task ShouldGetWPASupplicantConfAsync()
         {
             // Arrange
             var fileSystemMock = this.autoMocker.GetMock<IFileSystem>();
@@ -121,7 +143,7 @@ namespace RaspberryPi.Tests.Network
             var wpa = this.autoMocker.CreateInstance<WPA>();
 
             // Act
-            var wpaSupplicantConf = await wpa.GetConfigAsync();
+            var wpaSupplicantConf = await wpa.GetWPASupplicantConfAsync();
 
             // Assert
             this.testOutputHelper.WriteLine(ObjectDumper.Dump(wpaSupplicantConf, DumpStyle.CSharp));
@@ -136,7 +158,7 @@ namespace RaspberryPi.Tests.Network
         }
 
         [Fact]
-        public async Task ShouldSetConfigAsync()
+        public async Task ShouldSetWPASupplicantConfAsync()
         {
             // Arrange
 
@@ -160,7 +182,7 @@ namespace RaspberryPi.Tests.Network
             var systemCtlMock = this.autoMocker.GetMock<ISystemCtl>();
 
             var wpa = this.autoMocker.CreateInstance<WPA>();
-            var wpaSupplicantConf = await wpa.GetConfigAsync();
+            var wpaSupplicantConf = await wpa.GetWPASupplicantConfAsync();
             wpaSupplicantConf.Country = Countries.Germany;
             wpaSupplicantConf.APScan = 0;
             wpaSupplicantConf.Networks = new[]
@@ -173,7 +195,7 @@ namespace RaspberryPi.Tests.Network
             };
 
             // Act
-            await wpa.SetConfigAsync(wpaSupplicantConf);
+            await wpa.SetWPASupplicantConfAsync(wpaSupplicantConf);
 
             // Assert
             var fileContent = wpaSupplicantConfMemoryStreamOutput.GetString();

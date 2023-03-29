@@ -123,7 +123,7 @@ namespace RaspberryPi.Tests.Network
             var processRunnerMock = this.autoMocker.GetMock<IProcessRunner>();
             var systemCtlMock = this.autoMocker.GetMock<ISystemCtl>();
             var wpaMock = this.autoMocker.GetMock<IWPA>();
-            wpaMock.Setup(w => w.GetConfigAsync())
+            wpaMock.Setup(w => w.GetWPASupplicantConfAsync())
                 .ReturnsAsync(WPASupplicantConfs.GetWPASupplicantConf_testssid());
 
             var iface = new NetworkInterface("ap@wlan0");
@@ -144,7 +144,7 @@ namespace RaspberryPi.Tests.Network
             processRunnerMock.Verify(p => p.TryExecuteCommand("sudo systemctl daemon-reload", It.IsAny<CancellationToken>()), Times.Once);
             //processRunnerMock.VerifyNoOtherCalls();
 
-            wpaMock.Verify(w => w.GetConfigAsync(), Times.Once);
+            wpaMock.Verify(w => w.GetWPASupplicantConfAsync(), Times.Once);
             wpaMock.VerifyNoOtherCalls();
 
             systemCtlMock.VerifyNoOtherCalls();
