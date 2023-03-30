@@ -15,5 +15,7 @@ namespace RaspberryPi.Network
         NetworkInterfaceType NetworkInterfaceType { get; }
 
         IPInterfaceProperties GetIPProperties();
+
+        void Refresh();
     }
 }
