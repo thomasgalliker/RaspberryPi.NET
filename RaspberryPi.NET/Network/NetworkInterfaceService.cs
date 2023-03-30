@@ -52,18 +52,38 @@ namespace RaspberryPi.Network
         /// <inheritdoc/>
         public void SetLinkUp(INetworkInterface iface)
         {
+            if (iface == null)
+            {
+                throw new ArgumentNullException(nameof(iface), $"Parameter '{nameof(iface)}' must not be null");
+            }
+
             this.processRunner.ExecuteCommand($"sudo ip link set {iface.Name} up");
         }
 
         /// <inheritdoc/>
         public void SetLinkDown(INetworkInterface iface)
         {
+            if (iface == null)
+            {
+                throw new ArgumentNullException(nameof(iface), $"Parameter '{nameof(iface)}' must not be null");
+            }
+
             this.processRunner.ExecuteCommand($"sudo ip link set {iface.Name} down");
         }
 
         /// <inheritdoc/>
         public void SetMacAddress(INetworkInterface iface, PhysicalAddress macAddress)
         {
+            if (iface == null)
+            {
+                throw new ArgumentNullException(nameof(iface), $"Parameter '{nameof(iface)}' must not be null");
+            }
+
+            if (macAddress == null)
+            {
+                throw new ArgumentNullException(nameof(macAddress), $"Parameter '{nameof(macAddress)}' must not be null");
+            }
+
             var isUp = iface.OperationalStatus == OperationalStatus.Up;
 
             // Set link down (if needed)
