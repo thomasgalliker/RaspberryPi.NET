@@ -16,7 +16,7 @@ namespace RaspberryPi.Network
         {
             if (networkInterface == null)
             {
-                throw new ArgumentNullException(nameof(networkInterface), $"Parameter '{nameof(networkInterface)}' must not be null or empty");
+                throw new ArgumentNullException(nameof(networkInterface), $"Parameter '{nameof(networkInterface)}' must not be null");
             }
 
             this.networkInterface = networkInterface;
