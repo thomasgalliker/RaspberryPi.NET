@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using Microsoft.Extensions.DependencyInjection;
+using RaspberryPi;
 using RaspberryPi.Network;
 using RaspberryPi.Process;
 using RaspberryPi.Services;
 using RaspberryPi.Storage;
 
-namespace RaspberryPi.Extensions
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
