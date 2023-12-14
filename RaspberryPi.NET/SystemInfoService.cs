@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using RaspberryPi.Extensions;
 using RaspberryPi.Process;
-using RaspberryPi.Storage;
+using UnitsNet;
 
 namespace RaspberryPi
 {
@@ -26,14 +25,11 @@ namespace RaspberryPi
         private static readonly Regex RandomAccessMemoryPattern = new Regex(@"Mem:\s*(?<total>\d*)\s*(?<used>\d*)\s*(?<free>\d*)\s*(?<shared>\d*)\s*(?<buffers>\d*)\s*(?<cache>\d*)\s*(?<available>\d*)\s*.*$");
         private static readonly Regex SwapMemoryPattern = new Regex(@"Swap:\s*(?<total>\d*)\s*(?<used>\d*)\s*(?<free>\d*)\s*.*$");
 
-        private readonly IFileSystem fileSystem;
         private readonly IProcessRunner processRunner;
 
         public SystemInfoService(
-            IFileSystem fileSystem,
             IProcessRunner processRunner)
         {
-            this.fileSystem = fileSystem;
             this.processRunner = processRunner;
         }
 
@@ -55,44 +51,45 @@ namespace RaspberryPi
 
             var commandLineResult = this.processRunner.ExecuteCommand("hostnamectl");
 
-            using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(commandLineResult.OutputData));
-            using var reader = new StreamReader(memoryStream);
 
-            while (!reader.EndOfStream)
+            var keyValueRegex = new Regex(@"^(\s*)(?<Key>[^:{}]*):(?<Value>.*)", RegexOptions.Multiline);
+            var matchesAll = keyValueRegex.Matches(commandLineResult.OutputData);
+
+            if (RegexExtensions.TryParseValue(matchesAll, "Static hostname", out var hostname))
             {
-                var line = await reader.ReadLineAsync();
-                line = line.Trim();
+                hostInfo.Hostname = hostname;
+            }
 
-                if (CheckLineStartsWith(line, "Static hostname"))
-                {
-                    hostInfo.Hostname = ReadLineValue(line);
-                }
-                else if (CheckLineStartsWith(line, "Machine ID"))
-                {
-                    hostInfo.MachineId = ReadLineValue(line);
-                }
-                else if (CheckLineStartsWith(line, "Boot ID"))
-                {
-                    hostInfo.BootId = ReadLineValue(line);
-                }
-                else if (CheckLineStartsWith(line, "Operating System"))
-                {
-                    hostInfo.OperatingSystem = ReadLineValue(line);
-                }
-                else if (CheckLineStartsWith(line, "Kernel"))
-                {
-                    hostInfo.Kernel = ReadLineValue(line);
-                }
-                else if (CheckLineStartsWith(line, "Architecture"))
-                {
-                    hostInfo.Architecture = ReadLineValue(line);
-                }
+            if (RegexExtensions.TryParseValue(matchesAll, "Machine ID", out var machineId))
+            {
+                hostInfo.MachineId = machineId;
+            }
+
+            if (RegexExtensions.TryParseValue(matchesAll, "Boot ID", out var bootId))
+            {
+                hostInfo.BootId = bootId;
+            }
+
+            if (RegexExtensions.TryParseValue(matchesAll, "Operating System", out var operatingSystem))
+            {
+                hostInfo.OperatingSystem = operatingSystem;
+            }
+
+            if (RegexExtensions.TryParseValue(matchesAll, "Kernel", out var kernel))
+            {
+                hostInfo.Kernel = kernel;
+            }
+
+            if (RegexExtensions.TryParseValue(matchesAll, "Architecture", out var architecture))
+            {
+                hostInfo.Architecture = architecture;
             }
 
             return hostInfo;
         }
 
         /// <inheritdoc/>
+        [Obsolete]
         public async Task<CpuInfo> GetCpuInfoAsync()
         {
             var processorInfos = new List<ProcessorInfo>();
@@ -202,8 +199,8 @@ namespace RaspberryPi
 
             return new CpuSensorsStatus
             {
-                Temperature = temperature,
-                Voltage = voltage,
+                Temperature = Temperature.FromDegreesCelsius(temperature),
+                Voltage = ElectricPotential.FromVolts(voltage),
                 UnderVoltageDetected = binaryLength > 0 && '1'.Equals(getThrottledInBinary[binaryLength - 1]),
                 ArmFrequencyCapped = binaryLength > 1 && '1'.Equals(getThrottledInBinary[binaryLength - 2]),
                 CurrentlyThrottled = binaryLength > 2 && '1'.Equals(getThrottledInBinary[binaryLength - 3]),
@@ -242,13 +239,13 @@ namespace RaspberryPi
 
             return new RandomAccessMemoryStatus
             {
-                Total = total,
-                Used = used,
-                Free = free,
-                Shared = shared,
-                Buffers = buffers,
-                Cache = cache,
-                Available = available
+                Total = Information.FromBytes(total),
+                Used = Information.FromBytes(used),
+                Free = Information.FromBytes(free),
+                Shared = Information.FromBytes(shared),
+                Buffers = Information.FromBytes(buffers),
+                Cache = Information.FromBytes(cache),
+                Available = Information.FromBytes(available),
             };
         }
 
@@ -261,17 +258,19 @@ namespace RaspberryPi
 
             return new MemoryStatus
             {
-                Total = total,
-                Used = used,
-                Free = free,
+                Total = Information.FromBytes(total),
+                Used = Information.FromBytes(used),
+                Free = Information.FromBytes(free),
             };
         }
 
+        [Obsolete("Use TryParseValue instead")]
         private static bool CheckLineStartsWith(string line, string startsWith)
         {
             return line.StartsWith(startsWith, StringComparison.InvariantCultureIgnoreCase);
         }
 
+        [Obsolete("Use TryParseValue instead")]
         private static string ReadLineValue(string line)
         {
             return line.Substring(line.IndexOf(":") + 1).Trim();

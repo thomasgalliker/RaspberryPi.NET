@@ -13,15 +13,27 @@
 	  <None Remove="TestData\dhcpcd.conf" />
 	  <None Remove="TestData\free.txt" />
 	  <None Remove="TestData\hostinfo.txt" />
-	  <None Remove="TestData\wpa_supplicant.conf" />
+	  <None Remove="TestData\iwgetid.txt" />
+	  <None Remove="TestData\iwlist_wlan0_scan.txt" />
+	  <None Remove="TestData\iw_dev_wlan0_station_dump.txt" />
+	  <None Remove="TestData\iw_list.txt" />
+	  <None Remove="TestData\iw_wlan0_info.txt" />
+	  <None Remove="TestData\wpa_supplicant_example1.conf" />
+	  <None Remove="TestData\wpa_supplicant_example2.conf" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <EmbeddedResource Include="TestData\iwgetid.txt" />
+	  <EmbeddedResource Include="TestData\iw_wlan0_info.txt" />
+	  <EmbeddedResource Include="TestData\iw_list.txt" />
 	  <EmbeddedResource Include="TestData\free.txt" />
 	  <EmbeddedResource Include="TestData\hostinfo.txt" />
 	  <EmbeddedResource Include="TestData\cpuinfo.txt" />
 	  <EmbeddedResource Include="TestData\dhcpcd.conf" />
-	  <EmbeddedResource Include="TestData\wpa_supplicant.conf" />
+	  <EmbeddedResource Include="TestData\iwlist_wlan0_scan.txt" />
+	  <EmbeddedResource Include="TestData\iw_dev_wlan0_station_dump.txt" />
+	  <EmbeddedResource Include="TestData\wpa_supplicant_example2.conf" />
+	  <EmbeddedResource Include="TestData\wpa_supplicant_example1.conf" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -31,13 +43,14 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.1" />
 		<PackageReference Include="Moq.Contrib.HttpClient" Version="1.4.0" />
+		<PackageReference Include="ObjectDumper.NET" Version="3.5.2" />
 		<PackageReference Include="xunit" Version="2.4.2" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<PackageReference Include="Moq.AutoMock" Version="3.4.0" />
-		<PackageReference Include="FluentAssertions" Version="6.7.0" />
+		<PackageReference Include="FluentAssertions" Version="6.8.0" />
 	</ItemGroup>
 
 	<ItemGroup>

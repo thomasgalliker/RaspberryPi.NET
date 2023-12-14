@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace RaspberryPi.Storage
 {
@@ -23,16 +24,6 @@ namespace RaspberryPi.Storage
             return new FileStream(path, mode, access, share);
         }
 
-        public StreamReader CreateStreamReader(string path, FileMode mode, FileAccess access)
-        {
-            return new StreamReader(this.Create(path, mode, access));
-        }
-
-        public StreamWriter CreateStreamWriter(string path, FileMode mode, FileAccess access)
-        {
-            return new StreamWriter(this.Create(path, mode, access));
-        }
-
         /// <inheritdoc />
         public Stream Create(string path, FileMode mode, FileAccess access, FileShare share, int bufferSize)
         {
@@ -49,6 +40,24 @@ namespace RaspberryPi.Storage
         public Stream Create(string path, FileMode mode, FileAccess access, FileShare share, int bufferSize, bool useAsync)
         {
             return new FileStream(path, mode, access, share, bufferSize, useAsync);
+        }
+
+        /// <inheritdoc />
+        public StreamReader CreateStreamReader(string path, FileMode mode, FileAccess access)
+        {
+            return new StreamReader(this.Create(path, mode, access));
+        }
+
+        /// <inheritdoc />
+        public StreamWriter CreateStreamWriter(string path, FileMode mode, FileAccess access)
+        {
+            return new StreamWriter(this.Create(path, mode, access));
+        }
+
+        /// <inheritdoc />
+        public StreamWriter CreateStreamWriter(Stream stream, Encoding encoding, int bufferSize, bool leaveOpen)
+        {
+            return new StreamWriter(stream, encoding, bufferSize, leaveOpen);
         }
     }
 }

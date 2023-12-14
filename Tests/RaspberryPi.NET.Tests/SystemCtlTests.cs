@@ -27,8 +27,8 @@ namespace RaspberryPi.Tests
         {
             // Arrange
             var processRunnerMock = this.autoMocker.GetMock<IProcessRunner>();
-            processRunnerMock.Setup(p => p.ExecuteCommand(It.IsAny<CommandLineInvocation>(), It.IsAny<CancellationToken>()))
-                .Returns(new CommandLineResult(0, "", ""));
+            processRunnerMock.Setup(p => p.TryExecuteCommand(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(CommandLineResult.SuccessResult);
 
             var systemCtl = this.autoMocker.CreateInstance<SystemCtl>();
 
@@ -44,7 +44,7 @@ namespace RaspberryPi.Tests
         {
             // Arrange
             var processRunnerMock = this.autoMocker.GetMock<IProcessRunner>();
-            processRunnerMock.Setup(p => p.ExecuteCommand(It.IsAny<CommandLineInvocation>(), It.IsAny<CancellationToken>()))
+            processRunnerMock.Setup(p => p.TryExecuteCommand(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .Returns(new CommandLineResult(99, "", "Service does not exist"));
 
             var systemCtl = this.autoMocker.CreateInstance<SystemCtl>();
@@ -61,8 +61,8 @@ namespace RaspberryPi.Tests
         {
             // Arrange
             var processRunnerMock = this.autoMocker.GetMock<IProcessRunner>();
-            processRunnerMock.Setup(p => p.ExecuteCommand(It.IsAny<CommandLineInvocation>(), It.IsAny<CancellationToken>()))
-                .Returns(new CommandLineResult(0, "", ""));
+            processRunnerMock.Setup(p => p.TryExecuteCommand(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                .Returns(CommandLineResult.SuccessResult);
 
             var systemCtl = this.autoMocker.CreateInstance<SystemCtl>();
 

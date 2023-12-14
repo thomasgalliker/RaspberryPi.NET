@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace RaspberryPi
 {
-    public static class RuntimeInformationHelper
+    public static class OperatingSystemHelper
     {
         public static OSPlatform GetOperatingSystem()
         {

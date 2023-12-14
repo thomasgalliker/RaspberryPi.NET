@@ -1,4 +1,4 @@
-﻿processor       : 0
+processor       : 0
 model name      : ARMv7 Processor rev 4 (v7l)
 BogoMIPS        : 38.40
 Features        : half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm crc32

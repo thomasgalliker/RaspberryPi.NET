@@ -17,24 +17,28 @@ namespace RaspberryPi.Process
             this.logger = logger;
         }
 
+        /// <inheritdoc/>
         public CommandLineResult TryExecuteCommand(string commandLine, CancellationToken cancellationToken = default)
         {
             var commandLineInvocation = new CommandLineInvocation(commandLine);
             return this.TryExecuteCommand(commandLineInvocation);
         }
 
+        /// <inheritdoc/>
         public CommandLineResult TryExecuteCommand(CommandLineInvocation invocation, CancellationToken cancellationToken = default)
         {
             var cmdResult = this.ExecuteCommandInternal(invocation, cancellationToken);
             return cmdResult;
         }
 
+        /// <inheritdoc/>
         public CommandLineResult ExecuteCommand(string commandLine, CancellationToken cancellationToken = default)
         {
             var commandLineInvocation = new CommandLineInvocation(commandLine);
             return this.ExecuteCommand(commandLineInvocation);
         }
 
+        /// <inheritdoc/>
         public CommandLineResult ExecuteCommand(CommandLineInvocation invocation, CancellationToken cancellationToken = default)
         {
             var cmdResult = this.ExecuteCommandInternal(invocation, cancellationToken);
@@ -93,6 +97,8 @@ namespace RaspberryPi.Process
                 throw new ArgumentNullException(nameof(errorAction));
             }
 
+            var traceId = Guid.NewGuid().ToString("N").Substring(0, 5).ToUpperInvariant();
+
             void WriteData(Action<string> action, ManualResetEventSlim resetEvent, DataReceivedEventArgs e)
             {
                 try
@@ -113,7 +119,14 @@ namespace RaspberryPi.Process
 
             try
             {
-                this.logger.LogDebug($"Starting process '{executable}' in working directory '{workingDirectory}'...");
+                if (this.logger.IsEnabled(LogLevel.Trace))
+                {
+                    this.logger.LogTrace($"P#{traceId}: '{executable} {arguments}'");
+                }
+                else
+                {
+                    this.logger.LogDebug($"{executable} {arguments}");
+                }
 
                 using (var outputResetEvent = new ManualResetEventSlim(false))
                 using (var errorResetEvent = new ManualResetEventSlim(false))
@@ -171,7 +184,15 @@ namespace RaspberryPi.Process
                         this.SafelyWaitForAllOutput(errorResetEvent, cancellationToken);
 
                         var exitCode = SafelyGetExitCode(process);
-                        this.logger.LogDebug($"Process '{executable}' exited with code {exitCode}");
+
+                        if (this.logger.IsEnabled(LogLevel.Trace))
+                        {
+                            this.logger.LogTrace($"P#{traceId}: '{executable} {arguments}' --> finished with exit code {exitCode}");
+                        }
+                        else
+                        {
+                            this.logger.LogInformation($"{executable} {arguments} --> exit code {exitCode}");
+                        }
 
                         running = false;
                         return exitCode;
@@ -181,7 +202,16 @@ namespace RaspberryPi.Process
             catch (Exception ex)
             {
                 var cmdEx = new CommandLineException(ex);
-                this.logger.LogError(cmdEx, $"Process '{executable}' failed with exception");
+
+                if (this.logger.IsEnabled(LogLevel.Trace))
+                {
+                    this.logger.LogError($"P#{traceId}: '{executable} {arguments}' --> failed with exception");
+                }
+                else
+                {
+                    this.logger.LogError($"{executable} {arguments} --> failed with exception");
+                }
+
                 throw cmdEx;
             }
         }

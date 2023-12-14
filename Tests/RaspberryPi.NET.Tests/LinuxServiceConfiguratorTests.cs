@@ -18,13 +18,13 @@ namespace RaspberryPi.Tests
         private const string ServiceName = "serviceName";
         private static readonly ServiceDefinition TestServiceDefinition = new ServiceDefinition(ServiceName)
         {
-            ServiceType = ServiceType.Simple,
+            Type = ServiceType.Simple,
             WorkingDirectory = "workingDirectory",
             ExecStart = "execStart",
             ExecStop = "execStop",
             KillSignal = "killSignal",
             KillMode = KillMode.Process,
-            ServiceDescription = "serviceDescription",
+            Description = "serviceDescription",
             UserName = "userName",
             GroupName = "groupName",
             Restart = ServiceRestart.No,
@@ -34,7 +34,7 @@ namespace RaspberryPi.Tests
                 "network-online.target",
                 "firewalld.service"
             },
-            WantsServices = new[]
+            Wants = new[]
             {
                 "network-online.target"
             },
@@ -123,6 +123,7 @@ namespace RaspberryPi.Tests
 
             systemCtl.Verify(s => s.StopService(ServiceName), Times.Once);
             systemCtl.Verify(s => s.DisableService(ServiceName), Times.Once);
+            systemCtl.Verify(s => s.MaskService(ServiceName), Times.Once);
             systemCtl.Verify(s => s.EnableService(ServiceName), Times.Once);
             systemCtl.VerifyNoOtherCalls();
         }
@@ -150,6 +151,7 @@ namespace RaspberryPi.Tests
 
             systemCtl.Verify(s => s.StopService(ServiceName), Times.Once);
             systemCtl.Verify(s => s.DisableService(ServiceName), Times.Once);
+            systemCtl.Verify(s => s.MaskService(ServiceName), Times.Once);
             systemCtl.VerifyNoOtherCalls();
         }
 

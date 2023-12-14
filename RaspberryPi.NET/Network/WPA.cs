@@ -6,11 +6,15 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using RaspberryPi.Extensions;
+using RaspberryPi.Internals;
 using RaspberryPi.Process;
 using RaspberryPi.Services;
 using RaspberryPi.Storage;
+using RaspberryPi.Utils;
 
 namespace RaspberryPi.Network
 {
@@ -21,15 +25,16 @@ namespace RaspberryPi.Network
     {
         public const string WpaSupplicantService = "wpa_supplicant.service";
         public const string WpaSupplicantConfFilePath = "/etc/wpa_supplicant/wpa_supplicant.conf";
-
-        private static readonly string[] NewLineChars = new string[] { "\n", "\r\n" };
+        private const int PskMinLength = 8;
+        private const int PskMaxLength = 64;
         private const string ESSID = "ESSID:\"";
+        private const int FileBufferSize = 1024;
+        private static readonly string[] NewLineChars = new string[] { "\n", "\r\n" };
 
         private readonly ILogger logger;
         private readonly ISystemCtl systemCtl;
         private readonly IProcessRunner processRunner;
         private readonly IFileSystem fileSystem;
-        private readonly IDHCP dhcp;
         private readonly INetworkInterfaceService networkInterface;
 
         public WPA(
@@ -37,51 +42,94 @@ namespace RaspberryPi.Network
             ISystemCtl systemCtl,
             IProcessRunner processRunner,
             IFileSystem fileSystem,
-            IDHCP dhcp,
             INetworkInterfaceService networkInterface)
         {
             this.logger = logger;
             this.systemCtl = systemCtl;
             this.processRunner = processRunner;
             this.fileSystem = fileSystem;
-            this.dhcp = dhcp;
             this.networkInterface = networkInterface;
         }
 
-        /// <summary>
-        /// Start wpa_supplicant for station mode
-        /// </summary>
-        /// <returns>Start result</returns>
-        public async Task Start()
+        /// <inheritdoc/>
+        public void Start()
         {
+            this.EnsureWpaSupplicantConf();
+
             if (!this.systemCtl.IsEnabled(WpaSupplicantService))
             {
-                await this.SetIPAddress(null, null, null, null);
-                this.systemCtl.StartService(WpaSupplicantService);
                 this.systemCtl.EnableService(WpaSupplicantService);
+            }
+
+            if (!this.systemCtl.IsActive(WpaSupplicantService))
+            {
+                this.systemCtl.StartService(WpaSupplicantService);
             }
         }
 
-        /// <summary>
-        /// Stop wpa_supplicant for station mode
-        /// </summary>
-        /// <returns>Stop result</returns>
+        /// <inheritdoc/>
+        public void Restart()
+        {
+            this.EnsureWpaSupplicantConf();
+
+            if (!this.systemCtl.IsEnabled(WpaSupplicantService))
+            {
+                this.systemCtl.EnableService(WpaSupplicantService);
+            }
+
+            this.systemCtl.RestartService(WpaSupplicantService);
+        }
+
+        private void EnsureWpaSupplicantConf()
+        {
+            if (!this.fileSystem.File.Exists(WpaSupplicantConfFilePath))
+            {
+                throw new InvalidOperationException($"No WiFi configuration found. Use {nameof(AddOrUpdateNetworkAsync)} to configure at least one SSID.");
+            }
+        }
+
+        /// <inheritdoc/>
         public void Stop()
         {
             if (this.systemCtl.IsEnabled(WpaSupplicantService))
             {
-                this.systemCtl.StopService(WpaSupplicantService);
                 this.systemCtl.DisableService(WpaSupplicantService);
+            }
+
+            if (this.systemCtl.IsActive(WpaSupplicantService))
+            {
+                this.systemCtl.StopService(WpaSupplicantService);
             }
         }
 
-        /// <summary>
-        /// Retrieve a list of configured SSIDs
-        /// </summary>
-        /// <returns>List of configured SSIDs</returns>
-        public async Task<List<string>> GetSSIDs()
+        /// <inheritdoc/>
+        public IEnumerable<string> GetConnectedSSIDs()
         {
-            List<string> ssids = new();
+            var commandLineResult = this.processRunner.ExecuteCommand($"iwgetid -r");
+
+            return commandLineResult.OutputData
+                .Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        /// <inheritdoc/>
+        public IEnumerable<string> GetConnectedSSIDs(INetworkInterface iface)
+        {
+            if (iface == null)
+            {
+                throw new ArgumentNullException($"Parameter '{nameof(iface)}' must not be null", nameof(iface));
+            }
+
+            var commandLineResult = this.processRunner.ExecuteCommand($"iwgetid {iface.Name} -r");
+
+            return commandLineResult.OutputData
+                .Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        [Obsolete("Use GetWPASupplicantConfAsync")]
+        /// <inheritdoc/>
+        public async Task<IEnumerable<string>> GetSSIDsAsync()
+        {
+            var ssids = new List<string>();
             if (this.fileSystem.File.Exists(WpaSupplicantConfFilePath))
             {
                 using var reader = this.fileSystem.FileStreamFactory.CreateStreamReader(WpaSupplicantConfFilePath, FileMode.Open, FileAccess.Read);
@@ -123,6 +171,7 @@ namespace RaspberryPi.Network
                     ssids.Add(ssid);
                 }
             }
+
             return ssids;
         }
 
@@ -132,8 +181,8 @@ namespace RaspberryPi.Network
         /// <returns></returns>
         public async Task<string> GetReportAsync()
         {
-            var ssids = await this.GetSSIDs();
-            if (ssids.Count > 0)
+            var ssids = await this.GetSSIDsAsync();
+            if (ssids.Any())
             {
                 StringBuilder builder = new();
 
@@ -145,7 +194,7 @@ namespace RaspberryPi.Network
                 }
 
                 // Current IP address configuration
-                var networkInterfaces = this.networkInterface.GetAllNetworkInterfaces();
+                var networkInterfaces = this.networkInterface.GetAll();
                 foreach (var iface in networkInterfaces)
                 {
                     if (iface.OperationalStatus == OperationalStatus.Up && iface.Name.StartsWith("w"))
@@ -174,188 +223,305 @@ namespace RaspberryPi.Network
             return null;
         }
 
-        /// <summary>
-        /// Try to read the country code from the wpa_supplicant config file
-        /// </summary>
-        /// <returns>Country code or null if not found</returns>
-        public async Task<string> GetCountryCode()
+        /// <inheritdoc/>
+        public IEnumerable<string> ScanSSIDs(INetworkInterface iface)
         {
-            if (this.fileSystem.File.Exists(WpaSupplicantConfFilePath))
+            if (iface == null)
             {
-                using var reader = this.fileSystem.FileStreamFactory.CreateStreamReader(WpaSupplicantConfFilePath, FileMode.Open, FileAccess.Read);
-
-                while (!reader.EndOfStream)
-                {
-                    var line = (await reader.ReadLineAsync()).TrimStart();
-                    if (line.StartsWith("country="))
-                    {
-                        var startPosition = "country=".Length;
-                        var endPosition = line.Length - startPosition;
-                        return line.Substring(startPosition, endPosition).Trim(' ', '\t');
-                    }
-                }
+                throw new ArgumentNullException($"Parameter '{nameof(iface)}' must not be null", nameof(iface));
             }
 
-            return null;
-        }
+            var commandLineResult = this.processRunner.ExecuteCommand($"sudo iwlist {iface.Name} scan");
 
-        public IEnumerable<string> ScanSSIDs(string iface)
-        {
-            if (string.IsNullOrEmpty(iface))
-            {
-                throw new ArgumentException($"Parameter '{nameof(iface)}' must not be null or empty", nameof(iface));
-            }
-
-            var commandLineResult = this.processRunner.ExecuteCommand($"iwlist {iface} scan");
-
-            var ssids = commandLineResult.OutputData.Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries)
+            return commandLineResult.OutputData.Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries)
                .Where(line => line.Contains(ESSID))
-               .Select(line => line.Substring(line.IndexOf(ESSID) + ESSID.Length).TrimEnd('"'))
-               .ToArray();
-
-            return ssids;
+               .Select(line => line.Substring(line.IndexOf(ESSID) + ESSID.Length).TrimEnd('"'));
         }
 
-        /// <summary>
-        /// Update a given SSID or add it to the configuration, or delete either a single or all saved SSIDs
-        /// </summary>
-        /// <param name="ssid">SSID to update or an asterisk with password set to null to delete all the profiles</param>
-        /// <param name="psk">Password of the new network or null to delete it</param>
-        /// <param name="countryCode">Optional country code, must be set if no country code is present yet</param>
-        /// <returns></returns>
-        public async Task UpdateSSIDAsync(string ssid, string psk, string countryCode)
+        /// <inheritdoc/>
+        public async Task<WPASupplicantConf> GetWPASupplicantConfAsync()
         {
-            // Create template if it doesn't already exist or if the 
+            this.logger.LogDebug("GetWPASupplicantConfAsync");
+
+            // Source: https://github.com/snowdayclub/rpi-wifisetup-ble/blob/5bc236a90fa6c8ccaebef845d62c526fa2b487d2/wpamanager.py
+
             if (!this.fileSystem.File.Exists(WpaSupplicantConfFilePath))
             {
-                if (string.IsNullOrEmpty(countryCode))
-                {
-                    throw new ArgumentException($"Parameter '{nameof(countryCode)}' must not be null or empty", nameof(countryCode));
-                }
-
-                using FileStream configTemplateStream = new(WpaSupplicantConfFilePath, FileMode.Create, FileAccess.Write);
-                using StreamWriter writer = new(configTemplateStream);
-                await writer.WriteLineAsync($"country={countryCode}");
-                await writer.WriteLineAsync("ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev");
-                await writer.WriteLineAsync("update_config=1");
+                return null;
             }
 
-            // Rewrite wpa_supplicant.conf as requested
-            var countrySeen = false;
-            using (FileStream configStream = new(WpaSupplicantConfFilePath, FileMode.Open, FileAccess.ReadWrite))
+            var conf = new WPASupplicantConf();
+            using var configStream = this.fileSystem.FileStreamFactory.Create(WpaSupplicantConfFilePath, FileMode.Open, FileAccess.Read);
             {
-                // Parse the existing config file
-                using var newConfigStream = new MemoryStream();
+                using var reader = new StreamReader(configStream, Encoding.UTF8, true, FileBufferSize, leaveOpen: true);
                 {
-                    using StreamReader reader = new(configStream, Encoding.UTF8, true, 1024, leaveOpen: true);
-                    using StreamWriter writer = new(newConfigStream, Encoding.UTF8, 1024, leaveOpen: true);
+                    var fileContent = await reader.ReadToEndAsync();
 
-                    StringBuilder networkSection = null;
-                    string parsedSsid = null;
-                    var networkUpdated = false;
+                    var keyValueRegex = new Regex(@"^(\s*)(?<Key>[^={}]*)=(?<Value>.*)", RegexOptions.Multiline);
+                    var matchesAll = keyValueRegex.Matches(fileContent);
 
-                    while (!reader.EndOfStream)
+                    if (RegexExtensions.TryParseValue(matchesAll, "ctrl_interface", out var ctrlInterface))
                     {
-                        string line = await reader.ReadLineAsync(), trimmedLine = line.TrimStart();
-                        if (trimmedLine.StartsWith("country=") && !countrySeen)
+                        conf.CtrlInterface = ctrlInterface;
+                    }
+
+                    if (RegexExtensions.TryParseValue(matchesAll, "ap_scan", out var apscan))
+                    {
+                        conf.APScan = int.Parse(apscan);
+                    }
+
+                    if (RegexExtensions.TryParseValue(matchesAll, "update_config", out var updateConfig))
+                    {
+                        conf.UpdateConfig = int.Parse(updateConfig);
+                    }
+
+                    if (RegexExtensions.TryParseValue(matchesAll, "country", out var country))
+                    {
+                        conf.Country = Countries.FromAlpha2(country);
+                    }
+
+                    var networkSplit = fileContent.Split(new[] { "network=" }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var networkSplitItem in networkSplit.Skip(1))
+                    {
+                        var networkMatches = keyValueRegex.Matches(networkSplitItem);
+                        var network = new WPASupplicantNetwork();
+
+                        if (RegexExtensions.TryParseValue(networkMatches, "ssid", out var ssid))
                         {
-                            // Read country code, replace it if requested
-                            await writer.WriteLineAsync(string.IsNullOrWhiteSpace(countryCode) ? line : $"country={countryCode}");
-                            countrySeen = true;
+                            network.SSID = ssid.Replace("\"", "");
                         }
-                        else if (networkSection != null)
+
+                        if (RegexExtensions.TryParseValue(networkMatches, "scan_ssid", out var scanssid))
                         {
-                            // Dealing with the content of a network section
-                            if (trimmedLine.StartsWith("ssid="))
+                            network.ScanSSID = ConvertIntStringToBool(scanssid);
+                        }
+
+                        if (RegexExtensions.TryParseValue(networkMatches, "psk", out var psk))
+                        {
+                            if (psk.StartsWith("\"") && psk.EndsWith("\""))
                             {
-                                // Parse SSID
-                                parsedSsid = trimmedLine.Substring("ssid=".Length, trimmedLine.Length).Trim(' ', '\t', '"');
-                                networkSection.AppendLine(line);
-                            }
-                            else if (parsedSsid == ssid && trimmedLine.StartsWith("psk=") && psk != null)
-                            {
-                                // Replace PSK
-                                networkSection.AppendLine($"psk=\"{psk}\"");
-                                networkUpdated = true;
-                            }
-                            else if (trimmedLine.StartsWith("}"))
-                            {
-                                // End of network section
-                                networkSection.AppendLine(line);
-                                if ((ssid != "*" && ssid != parsedSsid) || psk != null)
-                                {
-                                    await writer.WriteAsync(networkSection.ToString());
-                                }
-                                networkSection = null;
-                                parsedSsid = null;
+                                network.PSK = psk.Substring(1, psk.Length - 2);
                             }
                             else
                             {
-                                // Copy everything else
-                                networkSection.AppendLine(line);
+                                network.PSK = psk;
                             }
                         }
-                        else if (trimmedLine.StartsWith("network={"))
-                        {
-                            // Entering a new network section
-                            networkSection = new StringBuilder();
-                            networkSection.AppendLine(line);
-                        }
-                        else
-                        {
-                            // Copy everything else
-                            await writer.WriteLineAsync(line);
-                        }
-                    }
 
-                    // Add missing network if required
-                    if (!networkUpdated && ssid != null && psk != null)
-                    {
-                        await writer.WriteLineAsync("network={");
-                        await writer.WriteLineAsync($"    ssid=\"{ssid}\"");
-                        await writer.WriteLineAsync($"    psk=\"{psk}\"");
-                        await writer.WriteLineAsync("}");
+                        if (RegexExtensions.TryParseValue(networkMatches, "key_mgmt", out var keyMgmt))
+                        {
+                            network.KeyMgmt = keyMgmt;
+                        }
+
+                        if (RegexExtensions.TryParseValue(networkMatches, "proto", out var proto))
+                        {
+                            network.Proto = proto;
+                        }
+
+                        if (RegexExtensions.TryParseValue(networkMatches, "pairwise", out var pairwise))
+                        {
+                            network.Pairwise = pairwise;
+                        }
+
+                        if (RegexExtensions.TryParseValue(networkMatches, "auth_alg", out var authAlg))
+                        {
+                            network.AuthAlg = authAlg;
+                        }
+
+                        if (RegexExtensions.TryParseValue(networkMatches, "disabled", out var disabled))
+                        {
+                            network.Disabled = ConvertIntStringToBool(disabled);
+                        }
+
+                        conf.Networks.Add(network);
                     }
                 }
 
-                // Truncate the old config file
-                configStream.Seek(0, SeekOrigin.Begin);
-                configStream.SetLength(newConfigStream.Length);
-
-                // Insert the country code at the start if it was missing before
-                if (!countrySeen && !string.IsNullOrWhiteSpace(countryCode))
-                {
-                    using StreamWriter countryCodeWriter = new(configStream, Encoding.UTF8, 1024, leaveOpen: true);
-                    await countryCodeWriter.WriteLineAsync($"country={countryCode}");
-                    countrySeen = true;
-                }
-
-                // Overwrite the rest of the previous config
-                newConfigStream.Seek(0, SeekOrigin.Begin);
-                await newConfigStream.CopyToAsync(configStream);
+                return conf;
             }
-
-            if (!countrySeen)
-            {
-                this.logger.LogWarning("No country code found in wpa_supplicant.conf, WiFi may not work");
-            }
-
-            // Restart the service to apply the new configuration
-            this.systemCtl.RestartService(WpaSupplicantService);
         }
 
-        /// <summary>
-        /// Update the IP address of the WiFi network interface
-        /// </summary>
-        /// <param name="ip">IP address or null if unchanged</param>
-        /// <param name="netmask">Subnet mask or null if unchanged</param>
-        /// <param name="gateway">Gateway or null if unchanged</param>
-        /// <param name="netmask">Subnet mask or null if unchanged</param>
-        /// <param name="dnsServer">Set IP address for AP mode</param>
-        /// <returns>Asynchronous task</returns>
-        public async Task SetIPAddress(IPAddress ip, IPAddress netmask, IPAddress gateway, IPAddress dnsServer, bool forAP = false)
+        /// <inheritdoc/>
+        public async Task SetWPASupplicantConfAsync(WPASupplicantConf conf)
         {
-            await this.dhcp.SetIPAddressAsync("wlan0", ip, netmask, gateway, dnsServer, forAP);
+            this.logger.LogDebug("SetWPASupplicantConfAsync");
+
+            if (conf == null)
+            {
+                throw new ArgumentNullException(nameof(conf), $"Parameter '{nameof(conf)}' must not be null");
+            }
+
+            if (conf.Country == null)
+            {
+                throw new ArgumentNullException($"{nameof(conf)}.{nameof(conf.Country)}", $"Parameter '{nameof(conf)}.{nameof(conf.Country)}' must not be null");
+            }
+
+            if (conf.Networks.Any(n => string.IsNullOrEmpty(n.SSID)))
+            {
+                throw new ArgumentException($"Parameter '{nameof(conf)}.{nameof(conf.Networks)}.{nameof(WPASupplicantNetwork.SSID)}' must not be null or empty", $"{nameof(conf)}.{nameof(conf.Networks)}.{nameof(WPASupplicantNetwork.SSID)}");
+            }
+
+            //if (conf.Networks.Any(n => string.IsNullOrEmpty(n.PSK) && n.KeyMgmt != "NONE"))
+            //{
+            //}
+
+            if (conf.Networks.Any(n => !string.IsNullOrEmpty(n.PSK) && (n.PSK.Length < PskMinLength || n.PSK.Length > PskMaxLength)))
+            {
+                throw new ArgumentException($"Parameter '{nameof(conf)}.{nameof(conf.Networks)}.{nameof(WPASupplicantNetwork.PSK)}' must be between {PskMinLength} and {PskMaxLength} characters.", $"{nameof(conf)}.{nameof(conf.Networks)}.{nameof(WPASupplicantNetwork.PSK)}");
+            }
+
+            var wpaSupplicantDir = Path.GetDirectoryName(WpaSupplicantConfFilePath);
+            if (!this.fileSystem.Directory.Exists(wpaSupplicantDir))
+            {
+                this.fileSystem.Directory.CreateDirectory(wpaSupplicantDir);
+            }
+
+            if (this.fileSystem.File.Exists(WpaSupplicantConfFilePath))
+            {
+                this.fileSystem.File.Delete(WpaSupplicantConfFilePath);
+            }
+
+            using var configStream = this.fileSystem.FileStreamFactory.Create(WpaSupplicantConfFilePath, FileMode.Create, FileAccess.Write);
+            {
+                using var writer = new StreamWriter(configStream, Encodings.UTF8EncodingWithoutBOM, FileBufferSize, leaveOpen: true);
+                {
+                    await writer.WriteLineAsync($"ctrl_interface={conf.CtrlInterface}");
+
+                    if (conf.APScan is int apscan)
+                    {
+                        await writer.WriteLineAsync($"ap_scan={apscan}");
+                    }
+
+                    if (conf.UpdateConfig is int updateConfig)
+                    {
+                        await writer.WriteLineAsync($"update_config={updateConfig}");
+                    }
+
+                    await writer.WriteLineAsync($"country={conf.Country.Alpha2}");
+                    await writer.WriteLineAsync();
+
+                    if (conf.Networks != null)
+                    {
+                        foreach (var network in conf.Networks)
+                        {
+                            await writer.WriteLineAsync("network={");
+                            await writer.WriteLineAsync($"\tssid=\"{network.SSID}\"");
+
+                            if (network.ScanSSID)
+                            {
+                                await writer.WriteLineAsync($"\tscan_ssid={ConvertBoolToIntString(network.ScanSSID)}");
+                            }
+
+                            if (!string.IsNullOrEmpty(network.PSK))
+                            {
+                                if (network.PSK.Length < 64)
+                                {
+                                    var pskHash = WPAPassphrase.GetHash(network.SSID, network.PSK);
+                                    await writer.WriteLineAsync($"\tpsk={pskHash}");
+                                }
+                                else
+                                {
+                                    await writer.WriteLineAsync($"\tpsk={network.PSK}");
+                                }
+                            }
+
+                            if (!string.IsNullOrEmpty(network.KeyMgmt))
+                            {
+                                await writer.WriteLineAsync($"\tkey_mgmt={network.KeyMgmt}");
+                            }
+
+                            if (!string.IsNullOrEmpty(network.Proto))
+                            {
+                                await writer.WriteLineAsync($"\tproto={network.Proto}");
+                            }
+
+                            if (!string.IsNullOrEmpty(network.Pairwise))
+                            {
+                                await writer.WriteLineAsync($"\tpairwise={network.Pairwise}");
+                            }
+
+                            if (!string.IsNullOrEmpty(network.AuthAlg))
+                            {
+                                await writer.WriteLineAsync($"\tauth_alg={network.AuthAlg}");
+                            }
+
+                            if (network.Disabled)
+                            {
+                                await writer.WriteLineAsync($"\tdisabled={ConvertBoolToIntString(network.Disabled)}");
+                            }
+
+                            await writer.WriteLineAsync("}");
+                            await writer.WriteLineAsync();
+                        }
+                    }
+                }
+            }
+
+            this.processRunner.ExecuteCommand($"sudo chmod 600 {WpaSupplicantConfFilePath}");
+
+            this.processRunner.ExecuteCommand($"sudo rfkill unblock wifi");
+
+            // Restart the service to apply the new configuration
+            this.Restart();
+
+            this.logger.LogDebug($"SetWPASupplicantConfAsync finished successfully");
+        }
+
+        public async Task<WPASupplicantNetwork> GetNetworkAsync(string ssid)
+        {
+            var conf = await this.GetWPASupplicantConfAsync();
+            conf ??= new WPASupplicantConf();
+
+            var network = conf.Networks.SingleOrDefault(n => n.SSID == ssid);
+            return network;
+        }
+
+        /// <inheritdoc/>
+        public async Task AddOrUpdateNetworkAsync(WPASupplicantNetwork network)
+        {
+            this.logger.LogDebug($"AddOrUpdateNetworkAsync: ssid={network.SSID}");
+
+            var conf = await this.GetWPASupplicantConfAsync();
+            conf ??= new WPASupplicantConf();
+
+            var existingNetwork = conf.Networks.SingleOrDefault(n => n.SSID == network.SSID);
+            if (existingNetwork != null)
+            {
+                conf.Networks.Remove(existingNetwork);
+            }
+
+            conf.Networks.Add(network);
+
+            await this.SetWPASupplicantConfAsync(conf);
+        }
+
+        /// <inheritdoc/>
+        public async Task RemoveNetworkAsync(WPASupplicantNetwork network)
+        {
+            this.logger.LogDebug($"RemoveNetworkAsync: ssid={network.SSID}");
+
+            var conf = await this.GetWPASupplicantConfAsync();
+            conf ??= new WPASupplicantConf();
+
+            var existingNetwork = conf.Networks.SingleOrDefault(n => n.SSID == network.SSID);
+            if (existingNetwork == null)
+            {
+                throw new InvalidOperationException($"Network with SSID={network.SSID} does not exist.");
+            }
+
+            conf.Networks.Remove(existingNetwork);
+
+            await this.SetWPASupplicantConfAsync(conf);
+        }
+
+        private static bool ConvertIntStringToBool(string disabled)
+        {
+            return int.Parse(disabled) == 1 ? true : false;
+        }
+
+        private static string ConvertBoolToIntString(bool value)
+        {
+            return value ? "1" : "0";
         }
     }
 }

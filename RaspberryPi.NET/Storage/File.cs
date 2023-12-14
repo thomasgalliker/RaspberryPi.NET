@@ -7,6 +7,11 @@
             return System.IO.File.ReadAllLines(path);
         }
 
+        public void Create(string path)
+        {
+            System.IO.File.Create(path);
+        }
+        
         public void Delete(string path)
         {
             System.IO.File.Delete(path);

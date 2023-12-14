@@ -7,6 +7,10 @@ namespace RaspberryPi.Services
 {
     public class LinuxServiceConfigurator : IServiceConfigurator
     {
+        // TODO: Refactor this service
+        // - InstallService should only install the service - no servicectl operations
+        // - ReinstallService should only start the service if it was previously running
+        // - UninstallService should attempt to stop the service
         private readonly ILogger logger;
         private readonly IFileSystem fileSystem;
         private readonly ISystemCtl systemCtl;
@@ -46,6 +50,7 @@ namespace RaspberryPi.Services
         {
             this.systemCtl.StopService(serviceName);
             this.systemCtl.DisableService(serviceName);
+            this.systemCtl.MaskService(serviceName);
             this.fileSystem.File.Delete(systemdUnitFilePath);
         }
 
@@ -101,26 +106,24 @@ namespace RaspberryPi.Services
         {
             if (!this.fileSystem.File.Exists("/bin/bash"))
             {
-                throw new Exception(
-                    "Could not detect bash. Bash is required to run tentacle.");
+                throw new Exception("Could not detect bash.");
             }
 
             if (!this.processRunner.HaveSudoPrivileges())
             {
-                throw new Exception(
-                    "Requires elevated privileges. Please run command as sudo.");
+                throw new Exception("Requires elevated privileges. Please run command as sudo.");
             }
 
             if (!this.processRunner.IsSystemdInstalled())
             {
-                throw new Exception(
-                    "Could not detect systemd. systemd is required to run Tentacle as a service");
+                throw new Exception("Could not detect systemd.");
             }
         }
 
         private static string GetServiceFilePath(string serviceName)
         {
-            return $"/etc/systemd/system/{serviceName}.service";
+            var serviceFileName = serviceName.EndsWith(".service", StringComparison.InvariantCultureIgnoreCase) ? serviceName : $"{serviceName}.service";
+            return $"/etc/systemd/system/{serviceFileName}";
         }
     }
 }

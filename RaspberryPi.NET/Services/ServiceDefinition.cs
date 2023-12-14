@@ -21,7 +21,7 @@ namespace RaspberryPi.Services
                 throw new ArgumentNullException(nameof(serviceName));
             }
 
-            if (!Regex.IsMatch(serviceName, @"^[a-zA-Z0-9_.]*$"))
+            if (!Regex.IsMatch(serviceName, @"^[a-zA-Z0-9_.@]*$"))
             {
                 throw new ArgumentException("Service name must only contain alphanumeric characters", nameof(serviceName));
             }
@@ -31,17 +31,23 @@ namespace RaspberryPi.Services
 
         public string ServiceName { get; private set; }
 
-        public ServiceType? ServiceType { get; set; }
+        public ServiceType? Type { get; set; }
+
+        public string PIDFile { get; set; }
 
         public string WorkingDirectory { get; set; }
 
-        public string ServiceDescription { get; set; }
+        public string Description { get; set; }
 
         public string SyslogIdentifier { get; set; }
+
+        public string ExecStartPre { get; set; }
 
         public string ExecStart { get; set; }
 
         public string ExecStop { get; set; }
+
+        public string ExecStopPost { get; set; }
 
         public string KillSignal { get; set; }
 
@@ -57,9 +63,13 @@ namespace RaspberryPi.Services
 
         public IEnumerable<string> AfterServices { get; set; }
 
-        public IEnumerable<string> WantsServices { get; set; }
+        public IEnumerable<string> Wants { get; set; }
+
+        public IEnumerable<string> WantedBy { get; set; }
 
         public IEnumerable<string> Environments { get; set; }
+
+        public string EnvironmentFile { get; set; }
 
         public string Busname { get; set; }
 
@@ -67,9 +77,9 @@ namespace RaspberryPi.Services
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("[Unit]");
-            if (!string.IsNullOrEmpty(this.ServiceDescription))
+            if (!string.IsNullOrEmpty(this.Description))
             {
-                stringBuilder.AppendLine($"Description={this.ServiceDescription.Replace(Environment.NewLine, " ")}");
+                stringBuilder.AppendLine($"Description={this.Description.Replace(Environment.NewLine, " ")}");
             }
 
             if (this.AfterServices != null && this.AfterServices.Any())
@@ -77,20 +87,30 @@ namespace RaspberryPi.Services
                 stringBuilder.AppendLine($"After={string.Join(" ", this.AfterServices)}");
             }
 
-            if (this.WantsServices != null && this.WantsServices.Any())
+            if (this.Wants != null && this.Wants.Any())
             {
-                stringBuilder.AppendLine($"Wants={string.Join(" ", this.WantsServices)}");
+                stringBuilder.AppendLine($"Wants={string.Join(" ", this.Wants)}");
             }
 
             stringBuilder.AppendLine();
             stringBuilder.AppendLine("[Service]");
 
-            var serviceType = this.ServiceType ?? this.GetDefaultServiceType();
+            var serviceType = this.Type ?? this.GetDefaultServiceType();
             stringBuilder.AppendLine($"Type={GetServiceTypeDirective(serviceType)}");
+
+            if (!string.IsNullOrEmpty(this.PIDFile))
+            {
+                stringBuilder.AppendLine($"PIDFile={this.PIDFile}");
+            }
 
             if (!string.IsNullOrEmpty(this.WorkingDirectory))
             {
                 stringBuilder.AppendLine($"WorkingDirectory={this.WorkingDirectory}");
+            }
+
+            if (!string.IsNullOrEmpty(this.ExecStartPre))
+            {
+                stringBuilder.AppendLine($"ExecStartPre={this.ExecStartPre}");
             }
 
             if (!string.IsNullOrEmpty(this.ExecStart))
@@ -101,6 +121,11 @@ namespace RaspberryPi.Services
             if (!string.IsNullOrEmpty(this.ExecStop))
             {
                 stringBuilder.AppendLine($"ExecStop={this.ExecStop}");
+            }
+
+            if (!string.IsNullOrEmpty(this.ExecStopPost))
+            {
+                stringBuilder.AppendLine($"ExecStopPost={this.ExecStopPost}");
             }
 
             if (!string.IsNullOrEmpty(this.KillSignal))
@@ -154,24 +179,33 @@ namespace RaspberryPi.Services
                 }
             }
 
+            if (!string.IsNullOrEmpty(this.EnvironmentFile))
+            {
+                stringBuilder.AppendLine($"EnvironmentFile={this.EnvironmentFile}");
+            }
+
             stringBuilder.AppendLine();
-            stringBuilder.AppendLine("[Install]");
-            stringBuilder.AppendLine("WantedBy=multi-user.target");
+
+            if (this.WantedBy != null && this.WantedBy.Any())
+            {
+                stringBuilder.AppendLine("[Install]");
+                stringBuilder.AppendLine($"WantedBy={string.Join(" ", this.WantedBy)}");
+            }
 
             return stringBuilder.ToString().Trim('\n', '\r', ' ');
         }
 
         private ServiceType GetDefaultServiceType()
         {
-            if (this.ServiceType == null)
+            if (this.Type == null)
             {
                 if (string.IsNullOrEmpty(this.ExecStart))
                 {
-                    return Services.ServiceType.Oneshot;
+                    return ServiceType.Oneshot;
                 }
             }
 
-            return Services.ServiceType.Simple;
+            return ServiceType.Simple;
         }
 
         private static string GetKillModeDirective(KillMode killMode)
@@ -214,17 +248,17 @@ namespace RaspberryPi.Services
         {
             switch (serviceType)
             {
-                case Services.ServiceType.Simple:
+                case ServiceType.Simple:
                     return "simple";
-                case Services.ServiceType.Forking:
+                case ServiceType.Forking:
                     return "forking";
-                case Services.ServiceType.Oneshot:
+                case ServiceType.Oneshot:
                     return "oneshot";
-                case Services.ServiceType.Dbus:
+                case ServiceType.Dbus:
                     return "dbus";
-                case Services.ServiceType.Notify:
+                case ServiceType.Notify:
                     return "notify";
-                case Services.ServiceType.Idle:
+                case ServiceType.Idle:
                     return "idle";
                 default:
                     throw new NotSupportedException($"ServiceType '{serviceType}' is not supported");

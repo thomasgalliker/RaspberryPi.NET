@@ -35,10 +35,7 @@ namespace RaspberryPi.Tests.Services
                 "\r\n" +
                 "[Service]\r\n" +
                 "Type=oneshot\r\n" +
-                "SyslogIdentifier=service.Name\r\n" +
-                "\r\n" +
-                "[Install]\r\n" +
-                "WantedBy=multi-user.target");
+                "SyslogIdentifier=service.Name");
         }
 
         [Fact]
@@ -47,8 +44,8 @@ namespace RaspberryPi.Tests.Services
             // Arrange
             var serviceDefinition = new ServiceDefinition("service_Name")
             {
-                ServiceDescription = "Test service description",
-                ServiceType = ServiceType.Notify,
+                Description = "Test service description",
+                Type = ServiceType.Notify,
                 WorkingDirectory = "/home/pi/directory",
                 SyslogIdentifier = "service.name",
                 ExecStart = "/home/pi/directory/executable",
@@ -63,7 +60,7 @@ namespace RaspberryPi.Tests.Services
                     "network-online.target",
                     "firewalld.service"
                 },
-                WantsServices = new[]
+                Wants = new[]
                 {
                     "network-online.target"
                 },
@@ -72,6 +69,10 @@ namespace RaspberryPi.Tests.Services
                     "ASPNETCORE_ENVIRONMENT=Production",
                     "DOTNET_PRINT_TELEMETRY_MESSAGE=false",
                     "DOTNET_ROOT=/home/pi/.dotnet"
+                },
+                WantedBy = new[]
+                {
+                    "multi-user.target"
                 }
             };
 

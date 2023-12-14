@@ -1,0 +1,9 @@
+Interface wlan0
+        ifindex 2
+        wdev 0x1
+        addr e4:5f:01:94:89:f1
+        ssid galliker
+        type managed
+        wiphy 0
+        channel 3 (2422 MHz), width: 20 MHz, center1: 2422 MHz
+        txpower 31.00 dBm

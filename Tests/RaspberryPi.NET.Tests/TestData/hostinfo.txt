@@ -1,4 +1,4 @@
-﻿   Static hostname: testraspi
+   Static hostname: testraspi
          Icon name: computer
         Machine ID: cddb04fdadd242d5bd415ac5931050be
            Boot ID: 497cb38084944957a9655ddc57e34625

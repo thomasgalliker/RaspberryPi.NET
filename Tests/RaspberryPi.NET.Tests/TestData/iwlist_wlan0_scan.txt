@@ -1,0 +1,25 @@
+wlan0  Scan completed :
+      Cell 01 - Address: 12:34:56:78:90:AB
+                ESSID:"MyNetwork1"
+                Mode:Master
+                Frequency:2.452 GHz (Channel 9)
+                Quality=21/94  Signal level=-74 dBm  Noise level=-95 dBm
+                Encryption key:on
+                Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 18 Mb/s
+                          24 Mb/s; 36 Mb/s; 54 Mb/s; 6 Mb/s; 9 Mb/s
+                          12 Mb/s; 48 Mb/s
+                Extra:bcn_int=100
+                IE: WPA Version 1
+                    Group Cipher : TKIP
+                    Pairwise Ciphers (1) : TKIP
+                    Authentication Suites (1) : PSK
+      Cell 02 - Address: AB:CD:EF:00:00:00
+                ESSID:"MyNetwork2"
+                Mode:Master
+                Frequency:2.437 GHz (Channel 6)
+                Quality=7/94  Signal level=-88 dBm  Noise level=-95 dBm
+                Encryption key:on
+                Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 6 Mb/s
+                          9 Mb/s; 12 Mb/s; 18 Mb/s; 24 Mb/s; 36 Mb/s
+                          48 Mb/s; 54 Mb/s
+                Extra:bcn_int=100
