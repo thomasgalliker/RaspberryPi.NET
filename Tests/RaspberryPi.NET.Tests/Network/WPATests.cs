@@ -322,5 +322,44 @@ namespace RaspberryPi.Tests.Network
                 "}\r\n" +
                 "\r\n");
         }
+
+        [Fact]
+        public async Task ShouldRemoveNetwork_FromExistingConfig()
+        {
+            // Arrange
+            var fileSystemMock = this.autoMocker.GetMock<IFileSystem>();
+            fileSystemMock.Setup(f => f.Directory.Exists(Path.GetDirectoryName(WPA.WpaSupplicantConfFilePath)))
+                .Returns(false);
+            fileSystemMock.Setup(f => f.File.Exists(WPA.WpaSupplicantConfFilePath))
+                .Returns(true);
+
+            var wpaSupplicantConfStream = new StringBuilderStream(Files.GetWPASupplicantConf_Example1_Stream());
+            fileSystemMock.Setup(f => f.FileStreamFactory.Create(WPA.WpaSupplicantConfFilePath, FileMode.Open, FileAccess.Read))
+                .Returns(() => wpaSupplicantConfStream);
+            fileSystemMock.Setup(f => f.FileStreamFactory.Create(WPA.WpaSupplicantConfFilePath, FileMode.Create, FileAccess.Write))
+                .Returns(() => wpaSupplicantConfStream);
+
+            var processRunnerMock = this.autoMocker.GetMock<IProcessRunner>();
+            var systemCtlMock = this.autoMocker.GetMock<ISystemCtl>();
+
+            var wpa = this.autoMocker.CreateInstance<WPA>();
+
+            // Act
+            await wpa.RemoveNetworkAsync("testssid");
+
+            // Assert
+            var fileContent = wpaSupplicantConfStream.ToString();
+
+            this.testOutputHelper.WriteLine(
+                $"{Environment.NewLine}" +
+                $"{fileContent}");
+
+            fileContent.Should().Be(
+                "ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev\r\n" +
+                "ap_scan=1\r\n" +
+                "update_config=1\r\n" +
+                "country=CH\r\n" +
+                "\r\n");
+        }
     }
 }

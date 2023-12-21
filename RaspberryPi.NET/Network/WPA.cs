@@ -496,17 +496,17 @@ namespace RaspberryPi.Network
         }
 
         /// <inheritdoc/>
-        public async Task RemoveNetworkAsync(WPASupplicantNetwork network)
+        public async Task RemoveNetworkAsync(string ssid)
         {
-            this.logger.LogDebug($"RemoveNetworkAsync: ssid={network.SSID}");
+            this.logger.LogDebug($"RemoveNetworkAsync: ssid={ssid}");
 
             var conf = await this.GetWPASupplicantConfAsync();
             conf ??= new WPASupplicantConf();
 
-            var existingNetwork = conf.Networks.SingleOrDefault(n => n.SSID == network.SSID);
+            var existingNetwork = conf.Networks.SingleOrDefault(n => string.Equals(n.SSID, ssid, StringComparison.InvariantCultureIgnoreCase));
             if (existingNetwork == null)
             {
-                throw new InvalidOperationException($"Network with SSID={network.SSID} does not exist.");
+                throw new InvalidOperationException($"Network with ssid={ssid} does not exist.");
             }
 
             conf.Networks.Remove(existingNetwork);

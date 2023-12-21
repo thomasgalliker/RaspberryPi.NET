@@ -71,9 +71,9 @@ namespace RaspberryPi.Network
         Task AddOrUpdateNetworkAsync(WPASupplicantNetwork network);
 
         /// <summary>
-        /// Removes the network configuration <paramref name="network"/> which matches the SSID.
+        /// Removes the network configuration with the given <paramref name="ssid"/>.
         /// </summary>
-        /// <param name="network">The network configuration.</param>
-        Task RemoveNetworkAsync(WPASupplicantNetwork network);
+        /// <param name="ssid">The SSID to be removed.</param>
+        Task RemoveNetworkAsync(string ssid);
     }
 }
