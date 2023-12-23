@@ -150,14 +150,23 @@ if ! test -v NO_INTERNET; then
 fi
 
 # Install dependencies
-_logger "check if dependencies needed"
+_logger "Installing software updates..."
+sudo apt -y update
+
 # keep order of dependencies installation
+if [[ $(dpkg -l | grep -c dhcpcd) == 0 ]]; then
+    _logger "Installing dhcpcd..."
+    sudo apt -y install dhcpcd
+fi
+
+if [[ $(dpkg -l | grep -c hostapd) == 0 ]]; then
+    _logger "Installing hostapd..."
+    sudo apt -y install hostapd
+fi
+
 if [[ $(dpkg -l | grep -c dnsmasq) == 0 ]]; then
-    apt -y update
-    # apt -y install cron # --> no longer using chron (it's a service!).
-    apt -y install dhcpcd
-    apt -y install hostapd
-    apt -y install dnsmasq
+    _logger "Installing dnsmasq..."
+    sudo apt -y install dnsmasq
 fi
 
 if test true != "${STA_ONLY}"; then
@@ -257,8 +266,8 @@ fi
 if test true != "${STA_ONLY}"; then
     # enable dnsmasq.service / disable hostapd.service
     _logger "enable dnsmasq.service / disable hostapd.service"
-    systemctl unmask dnsmasq.service
-    systemctl enable dnsmasq.service
+    sudo systemctl unmask dnsmasq.service
+    sudo systemctl enable dnsmasq.service
     sudo systemctl stop hostapd # if the default hostapd service was active before
     sudo systemctl disable hostapd # if the default hostapd service was enabled before
     sudo systemctl enable accesspoint@wlan0.service
