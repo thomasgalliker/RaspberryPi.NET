@@ -9,8 +9,12 @@ namespace RaspberryPi.Network
 
         //Task SetupAccessPoint(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel, Country country);
         
-        Task SetupAccessPoint(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel, Country country);
+        Task SetupAccessPointAsync(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel, Country country);
         
-        Task SetupStationMode(INetworkInterface iface, WPASupplicantNetwork network, Country country = null);
+        Task SetupStationModeAsync(INetworkInterface iface, WPASupplicantNetwork network, Country country = null);
+
+        Task ConnectToWifiNetworkAsync(INetworkInterface iface, WPASupplicantNetwork network, Country country = null);
+
+        Task RemoveWifiNetworkAsync(INetworkInterface iface, string ssid);
     }
 }

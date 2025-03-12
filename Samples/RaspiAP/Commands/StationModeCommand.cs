@@ -83,7 +83,7 @@ namespace RaspiAP.Commands
                     iface = this.networkInterfaceService.GetByName("wlan0");
                 }
 
-                await this.networkManager.SetupStationMode(iface, network, country);
+                await this.networkManager.SetupStationModeAsync(iface, network, country);
 
                 return 0;
             }

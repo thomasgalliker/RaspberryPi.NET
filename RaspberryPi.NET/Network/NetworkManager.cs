@@ -49,7 +49,7 @@ namespace RaspberryPi.Network
         //    await this.accessPoint.RestartAsync();
         //}
 
-        public async Task SetupAccessPoint(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel, Country country)
+        public async Task SetupAccessPointAsync(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel, Country country)
         {
             if (iface == null)
             {
@@ -84,14 +84,24 @@ namespace RaspberryPi.Network
         }
 
         /// <inheritdoc />
-        public async Task SetupStationMode(INetworkInterface iface, WPASupplicantNetwork network, Country country = null)
+        public async Task SetupStationModeAsync(INetworkInterface iface, WPASupplicantNetwork network, Country country = null)
         {
             // https://raspberrypi.stackexchange.com/questions/117819/configure-back-to-normal-wifi-station-after-access-point-mode-hostapd
 
-            this.logger.LogDebug($"SetupStationMode");
+            this.logger.LogDebug($"SetupStationModeAsync");
 
             // No longer in AP mode
             this.accessPoint.Stop();
+
+            await this.ConnectToWifiNetworkAsync(iface, network, country);
+
+            await this.RestartWifiInterface(iface);
+        }
+
+        /// <inheritdoc />
+        public async Task ConnectToWifiNetworkAsync(INetworkInterface iface, WPASupplicantNetwork network, Country country = null)
+        {
+            this.logger.LogDebug($"ConnectToWifiNetworkAsync");
 
             await this.dhcp.SetIPAddressAsync(iface, null, null, null, null, null);
 
@@ -106,6 +116,11 @@ namespace RaspberryPi.Network
                     await this.wpa.SetWPASupplicantConfAsync(config);
                 }
             }
+        }
+
+        private async Task RestartWifiInterface(INetworkInterface iface)
+        {
+            this.logger.LogDebug($"RestartWifiInterface: iface={iface.Name}");
 
             await Task.Delay(1000);
 
@@ -126,6 +141,12 @@ namespace RaspberryPi.Network
 
             // TODO: See line 88 in Interface class
             // wpa_cli list_networks ...
+        }
+
+        public async Task RemoveWifiNetworkAsync(INetworkInterface iface, string ssid)
+        {
+            await this.wpa.RemoveNetworkAsync(ssid);
+            await this.RestartWifiInterface(iface);
         }
     }
 }
