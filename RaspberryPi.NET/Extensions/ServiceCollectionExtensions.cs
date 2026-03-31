@@ -25,18 +25,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.AddSingleton<ISystemInfoService, SystemInfoService>();
                 services.AddSingleton<IShutdownService, ShutdownService>();
             }
-            //#if DEBUG
-            else if (osplatform == OSPlatform.Windows)
+            else
             {
                 services.AddSingleton<IProcessRunner, NullProcessRunner>();
                 services.AddSingleton<IServiceConfigurator, NullServiceConfigurator>();
                 services.AddSingleton<ISystemInfoService, NullSystemInfoService>();
                 services.AddSingleton<IShutdownService, NullShutdownService>();
-            }
-            //#endif
-            else if (omitPlatformCheck == false)
-            {
-                throw new NotSupportedException($"This library only runs on RaspberryPi. OSPlatform \"{osplatform}\" is not supported.");
             }
 
             services.AddSingleton<IJournalctl, Journalctl>();
