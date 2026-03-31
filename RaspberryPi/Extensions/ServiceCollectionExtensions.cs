@@ -5,7 +5,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class ServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds registrations for services provided by RaspberryPi.NET library,
+        /// Adds registrations for services provided by RaspberryPi library,
         /// e.g. <seealso cref="IProcessRunner"/>, <seealso cref="IJournalctl"/>, <seealso cref="ISystemCtl"/>, ...
         /// </summary>
         public static void AddRaspberryPi(this IServiceCollection services, bool omitPlatformCheck = false)

@@ -6,7 +6,6 @@
 		<AssemblyName>RaspberryPi.Tests</AssemblyName>
 		<Nullable>enable</Nullable>
 		<EnableMoqAutoMockerOptionsGenerator>false</EnableMoqAutoMockerOptionsGenerator>
-		<RootNamespace>RaspberryPi.NET.Tests</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>

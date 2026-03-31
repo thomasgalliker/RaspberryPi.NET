@@ -54,7 +54,7 @@ steps:
       InsertAttributes: true
       FileEncoding: 'auto'
       WriteBOM: false
-      Product: 'RaspberryPi.NET'
+      Product: 'RaspberryPi'
       Description: ''
       Company: 'superdev GmbH'
       Copyright: '(c) $(date:YYYY) superdev GmbH'
@@ -108,7 +108,7 @@ steps:
       assemblyfilters: '-xunit*'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Pack RaspberryPi.NET'
+    displayName: 'Pack RaspberryPi'
     inputs:
       command: pack
       packagesToPack: RaspberryPi/RaspberryPi.csproj

@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
-    <RootNamespace>RaspberryPi</RootNamespace>
     <OutputType>Library</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
@@ -13,7 +12,7 @@
 
   <!--NuGet package-->
   <PropertyGroup>
-    <Product>RaspberryPi.NET</Product>
+    <Product>RaspberryPi</Product>
     <Description>.NET API for the Raspberry Pi</Description>
     <Version>1.0.0</Version>
     <Authors>Thomas Galliker</Authors>
@@ -22,9 +21,9 @@
     <PackageIcon>logo.png</PackageIcon>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageProjectUrl>https://github.com/thomasgalliker/RaspberryPi.NET</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/thomasgalliker/RaspberryPi</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/thomasgalliker/RaspberryPi.NET</RepositoryUrl>
+    <RepositoryUrl>https://github.com/thomasgalliker/RaspberryPi</RepositoryUrl>
     <Company>superdev GmbH</Company>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Copyright>Copyright $([System.DateTime]::Now.ToString(`yyyy`)) © Thomas Galliker</Copyright>
