@@ -1,5 +1,8 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Reflection;
+using System.Text;
 
 namespace RaspberryPi.Internals.ResourceLoader
 {
@@ -45,7 +48,7 @@ namespace RaspberryPi.Internals.ResourceLoader
         /// <param name="assembly">The assembly which embeds the resource.</param>
         /// <param name="resourceFileName">Resource file name.</param>
         /// <param name="encoding">Character encoding. Default is UTF8.</param>
-        string GetEmbeddedResourceString(Assembly assembly, string resourceFileName, Encoding? encoding = null);
+        string GetEmbeddedResourceString(Assembly assembly, string resourceFileName, Encoding encoding = null);
 
         /// <summary>
         ///     Attempts to find and return the resources from within the specified assembly that match the given file pattern.
@@ -54,6 +57,6 @@ namespace RaspberryPi.Internals.ResourceLoader
         /// <param name="assembly">The assembly which embeds the resource.</param>
         /// <param name="filePattern">Resource file pattern.</param>
         /// <param name="encoding">Character encoding. Default is UTF8.</param>
-        IEnumerable<string> GetEmbeddedResourceStrings(Assembly assembly, string filePattern, Encoding? encoding = null);
+        IEnumerable<string> GetEmbeddedResourceStrings(Assembly assembly, string filePattern, Encoding encoding = null);
     }
 }
