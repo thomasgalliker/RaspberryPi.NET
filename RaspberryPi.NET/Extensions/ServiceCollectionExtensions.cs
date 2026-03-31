@@ -5,6 +5,7 @@ using RaspberryPi.Network;
 using RaspberryPi.Process;
 using RaspberryPi.Services;
 using RaspberryPi.Storage;
+using File = RaspberryPi.Storage.File;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -14,11 +15,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds registrations for services provided by RaspberryPi.NET library,
         /// e.g. <seealso cref="IProcessRunner"/>, <seealso cref="IJournalctl"/>, <seealso cref="ISystemCtl"/>, ...
         /// </summary>
-        /// <param name="services"></param>
         public static void AddRaspberryPi(this IServiceCollection services, bool omitPlatformCheck = false)
         {
-            var osplatform = OperatingSystemHelper.GetOperatingSystem();
-            if (osplatform == OSPlatform.Linux)
+            if (omitPlatformCheck || OperatingSystemHelper.GetOperatingSystem() == OSPlatform.Linux)
             {
                 services.AddSingleton<IProcessRunner, ProcessRunner>();
                 services.AddSingleton<IServiceConfigurator, LinuxServiceConfigurator>();
