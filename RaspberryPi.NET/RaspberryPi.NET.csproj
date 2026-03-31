@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <RootNamespace>RaspberryPi</RootNamespace>
     <OutputType>Library</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>

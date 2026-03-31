@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
+﻿using System.ComponentModel;
 using System.Reflection;
-using System.Text;
 
 namespace RaspberryPi.Internals.ResourceLoader
 {

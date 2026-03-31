@@ -1,6 +1,4 @@
-﻿using RaspberryPi.Process;
-
-namespace RaspberryPi.Services
+﻿namespace RaspberryPi.Services
 {
     public class ShutdownService : IShutdownService
     {

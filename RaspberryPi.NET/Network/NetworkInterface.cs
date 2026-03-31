@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Net.NetworkInformation;
 using SystemNetworkInterface = System.Net.NetworkInformation.NetworkInterface;
 

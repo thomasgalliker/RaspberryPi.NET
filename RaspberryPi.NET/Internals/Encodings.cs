@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace RaspberryPi.Internals
+﻿namespace RaspberryPi.Internals
 {
     internal static class Encodings
     {

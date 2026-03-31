@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace RaspberryPi
+﻿namespace RaspberryPi
 {
     public interface ISystemInfoService
     {

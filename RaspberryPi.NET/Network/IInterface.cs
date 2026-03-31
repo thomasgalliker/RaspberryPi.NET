@@ -1,7 +1,4 @@
-﻿using System.Net;
-using System.Threading.Tasks;
-
-namespace RaspberryPi.Network
+﻿namespace RaspberryPi.Network
 {
     public interface IInterface
     {

@@ -1,9 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
-using RaspberryPi.Process;
-
-namespace RaspberryPi.Network
+﻿namespace RaspberryPi.Network
 {
     public interface IAccessPoint
     {

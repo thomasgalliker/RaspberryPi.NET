@@ -1,6 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Logging;
-using RaspberryPi.Process;
+﻿using Microsoft.Extensions.Logging;
 
 namespace RaspberryPi.Services
 {

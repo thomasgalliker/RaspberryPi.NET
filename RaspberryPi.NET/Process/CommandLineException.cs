@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RaspberryPi.Process
+﻿namespace RaspberryPi.Process
 {
     public class CommandLineException : Exception
     {

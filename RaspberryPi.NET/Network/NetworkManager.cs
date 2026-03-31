@@ -1,8 +1,4 @@
-﻿using System;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using RaspberryPi.Process;
+﻿using Microsoft.Extensions.Logging;
 
 namespace RaspberryPi.Network
 {

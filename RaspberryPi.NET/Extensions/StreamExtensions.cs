@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Text;
+﻿using System.Text;
 
 namespace RaspberryPi.Extensions
 {
@@ -30,7 +29,7 @@ namespace RaspberryPi.Extensions
             sourceStream.Rewind().CopyTo(targetStream);
             return targetStream.Rewind();
         }
-        
+
         public static MemoryStream Copy(this MemoryStream sourceStream, bool writable = false)
         {
             return new MemoryStream(sourceStream.ToArray(), writable);

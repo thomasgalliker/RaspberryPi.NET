@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace RaspberryPi.Network
+﻿namespace RaspberryPi.Network
 {
     public class AccessPointConfiguration
     {

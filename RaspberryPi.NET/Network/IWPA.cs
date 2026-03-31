@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace RaspberryPi.Network
+﻿namespace RaspberryPi.Network
 {
     public interface IWPA
     {

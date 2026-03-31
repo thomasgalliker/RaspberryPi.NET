@@ -1,17 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Text;
+﻿using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RaspberryPi.Extensions;
 using RaspberryPi.Internals;
-using RaspberryPi.Services;
-using RaspberryPi.Storage;
 
 namespace RaspberryPi.Network
 {
@@ -143,7 +133,7 @@ namespace RaspberryPi.Network
         }
 
         /// <inheritdoc/>
-        public async Task SetIPAddressAsync(INetworkInterface iface, IPAddress ip, IPAddress netmask, IPAddress gateway, IPAddress dnsServer, bool? forAP = null)
+        public async Task SetIPAddressAsync(INetworkInterface iface, IPAddress? ip, IPAddress? netmask, IPAddress? gateway, IPAddress dnsServer, bool? forAP = null)
         {
             if (iface == null)
             {
@@ -154,7 +144,7 @@ namespace RaspberryPi.Network
 
             // Check if the profile already exists and if anything is supposed to change
             var profiles = await this.GetDhcpProfiles();
-            DHCPProfile existingProfile = null;
+            DHCPProfile? existingProfile = null;
             foreach (var profile in profiles)
             {
                 if (profile.Interface == iface.Name)
@@ -219,7 +209,7 @@ namespace RaspberryPi.Network
             {
                 using var reader = this.fileSystem.FileStreamFactory.CreateStreamReader(DhcpcdConfFilePath, FileMode.Open, FileAccess.Read);
 
-                DHCPProfile dhcpProfile = null;
+                DHCPProfile? dhcpProfile = null;
                 while (!reader.EndOfStream)
                 {
                     var line = await reader.ReadLineAsync();
@@ -297,7 +287,7 @@ namespace RaspberryPi.Network
         /// <param name="dnsServer">DNS server or null if unset</param>
         /// <param name="forAP">Add extra option for AP mode</param>
         /// <returns>Asynchronous task</returns>
-        private async Task UpdateProfile(string iface, IPAddress ip, IPAddress subnetMask, IPAddress gateway, IPAddress dnsServer, bool forAP)
+        private async Task UpdateProfile(string iface, IPAddress? ip, IPAddress? subnetMask, IPAddress? gateway, IPAddress? dnsServer, bool forAP)
         {
             using var configStream = this.fileSystem.FileStreamFactory.Create(DhcpcdConfFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
             using var newConfigStream = new MemoryStream();

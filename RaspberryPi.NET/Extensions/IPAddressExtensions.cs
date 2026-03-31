@@ -1,7 +1,4 @@
-﻿using System;
-using System.Net;
-
-namespace RaspberryPi.Extensions
+﻿namespace RaspberryPi.Extensions
 {
     public static class IPAddressExtensions
     {

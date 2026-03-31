@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System.Text;
-
-namespace RaspberryPi.Storage
+﻿namespace RaspberryPi.Storage
 {
     /// <inheritdoc cref="FileStream" />
     public interface IFileStreamFactory

@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Text;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using RaspberryPi.Extensions;
-using RaspberryPi.Process;
 using UnitsNet;
 
 namespace RaspberryPi
@@ -103,7 +96,7 @@ namespace RaspberryPi
             using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(commandLineResult.OutputData));
             using var reader = new StreamReader(memoryStream);
 
-            ProcessorInfo processorInfo = null;
+            ProcessorInfo? processorInfo = null;
 
             while (!reader.EndOfStream)
             {
@@ -162,7 +155,7 @@ namespace RaspberryPi
             // Sources:
             // https://github.com/rembertmagri/pi-control-panel/blob/a5e4f0bf25cd9574a7a799ad4183f57494295e24/src/Infrastructure/PiControlPanel.Infrastructure.OnDemand/Services/CpuService.cs
             // https://stackoverflow.com/questions/12798611/splitting-a-hex-number
-            // 
+            //
             var result = this.processRunner.ExecuteCommand(MeasureTemp);
 
             var temperature = 0d;

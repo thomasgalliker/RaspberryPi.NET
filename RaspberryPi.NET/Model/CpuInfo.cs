@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace RaspberryPi
+﻿namespace RaspberryPi
 {
     public class CpuInfo
     {

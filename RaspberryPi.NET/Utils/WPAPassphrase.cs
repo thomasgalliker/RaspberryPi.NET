@@ -1,7 +1,4 @@
-﻿using System;
-using System.Text;
-
-namespace RaspberryPi.Utils
+﻿namespace RaspberryPi.Utils
 {
     public static class WPAPassphrase
     {

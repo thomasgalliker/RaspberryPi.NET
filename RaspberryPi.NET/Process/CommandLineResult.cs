@@ -14,7 +14,7 @@
         {
         }
 
-        public CommandLineResult(int exitCode, string outputData, string errorData)
+        public CommandLineResult(int exitCode, string? outputData, string? errorData)
         {
             this.ExitCode = exitCode;
             this.Success = exitCode == SuccessExitCode;
@@ -26,9 +26,9 @@
 
         public bool Success { get; }
 
-        public string OutputData { get; }
+        public string? OutputData { get; }
 
-        public string ErrorData { get; }
+        public string? ErrorData { get; }
 
         public override string ToString()
         {

@@ -64,7 +64,7 @@ namespace RaspiAP.Commands
                 var ipAddress = IPAddress.Parse("192.168.99.1");
                 var channel = 6;
 
-                INetworkInterface iface;
+                INetworkInterface? iface;
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     iface = this.networkInterfaceService.GetAll()

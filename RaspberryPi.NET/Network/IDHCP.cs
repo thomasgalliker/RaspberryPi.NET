@@ -1,7 +1,4 @@
-﻿using System.Net;
-using System.Threading.Tasks;
-
-namespace RaspberryPi.Network
+﻿namespace RaspberryPi.Network
 {
     public interface IDHCP
     {
@@ -48,6 +45,6 @@ namespace RaspberryPi.Network
         /// <param name="gateway">Gateway or null if unchanged</param>
         /// <param name="netmask">Subnet mask or null if unchanged</param>
         /// <param name="dnsServer">Set IP address for AP mode</param>
-        Task SetIPAddressAsync(INetworkInterface iface, IPAddress ip, IPAddress netmask, IPAddress gateway, IPAddress dnsServer, bool? forAP = null);
+        Task SetIPAddressAsync(INetworkInterface iface, IPAddress? ip, IPAddress? netmask, IPAddress? gateway, IPAddress? dnsServer, bool? forAP = null);
     }
 }

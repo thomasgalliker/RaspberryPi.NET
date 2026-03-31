@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Text;
-
-namespace RaspberryPi.Storage
+﻿namespace RaspberryPi.Storage
 {
     [Serializable]
     internal sealed class FileStreamFactory : IFileStreamFactory

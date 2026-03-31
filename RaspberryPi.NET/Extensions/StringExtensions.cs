@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace RaspberryPi.Extensions
+﻿namespace RaspberryPi.Extensions
 {
     internal static class StringExtensions
     {
