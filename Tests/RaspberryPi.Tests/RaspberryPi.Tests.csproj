@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<IsPackable>false</IsPackable>
+		<AssemblyName>RaspberryPi.Tests</AssemblyName>
+		<Nullable>enable</Nullable>
+		<EnableMoqAutoMockerOptionsGenerator>false</EnableMoqAutoMockerOptionsGenerator>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="TestData\cpuinfo.txt" />
+	  <None Remove="TestData\dhcpcd.conf" />
+	  <None Remove="TestData\free.txt" />
+	  <None Remove="TestData\hostinfo.txt" />
+	  <None Remove="TestData\iwgetid.txt" />
+	  <None Remove="TestData\iwlist_wlan0_scan.txt" />
+	  <None Remove="TestData\iw_dev_wlan0_station_dump.txt" />
+	  <None Remove="TestData\iw_list.txt" />
+	  <None Remove="TestData\iw_wlan0_info.txt" />
+	  <None Remove="TestData\wpa_supplicant_example1.conf" />
+	  <None Remove="TestData\wpa_supplicant_example2.conf" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="TestData\iwgetid.txt" />
+	  <EmbeddedResource Include="TestData\iw_wlan0_info.txt" />
+	  <EmbeddedResource Include="TestData\iw_list.txt" />
+	  <EmbeddedResource Include="TestData\free.txt" />
+	  <EmbeddedResource Include="TestData\hostinfo.txt" />
+	  <EmbeddedResource Include="TestData\cpuinfo.txt" />
+	  <EmbeddedResource Include="TestData\dhcpcd.conf" />
+	  <EmbeddedResource Include="TestData\iwlist_wlan0_scan.txt" />
+	  <EmbeddedResource Include="TestData\iw_dev_wlan0_station_dump.txt" />
+	  <EmbeddedResource Include="TestData\wpa_supplicant_example2.conf" />
+	  <EmbeddedResource Include="TestData\wpa_supplicant_example1.conf" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="coverlet.msbuild" Version="8.0.1">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
+		<PackageReference Include="Moq.Contrib.HttpClient" Version="1.4.0" />
+		<PackageReference Include="ObjectDumper.NET" Version="4.3.2" />
+		<PackageReference Include="xunit" Version="2.9.3" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Moq.AutoMock" Version="4.0.1" />
+		<PackageReference Include="FluentAssertions" Version="8.9.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\RaspberryPi\RaspberryPi.csproj" />
+	</ItemGroup>
+
+</Project>
