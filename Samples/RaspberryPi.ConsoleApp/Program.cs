@@ -1,13 +1,11 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RaspberryPi;
-using RaspberryPi.Extensions;
 
-internal partial class Program
+static class Program
 {
     private static int Main(string[] args)
     {
