@@ -180,7 +180,7 @@ namespace RaspberryPi.Network
         /// <param name="channel">The wifi channel number. Automatically selected if null.</param>
         /// <param name="country">The country in which this access point operates. If null, country code is read from wifi configuration.</param>
         /// <returns></returns>
-        public async Task ConfigureAsync(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, INetworkInterface[] noDhcpInterfaces = null, int? channel = null, Country country = null)
+        public async Task ConfigureAsync(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, INetworkInterface[]? noDhcpInterfaces = null, int? channel = null, Country? country = null)
         {
             if (iface == null)
             {
@@ -212,7 +212,7 @@ namespace RaspberryPi.Network
                 throw new ArgumentNullException(nameof(ipAddress), $"Parameter {nameof(ipAddress)} is not valid.");
             }
 
-            string countryCode;
+            string? countryCode;
 
             if (country != null)
             {
@@ -221,7 +221,7 @@ namespace RaspberryPi.Network
             else
             {
                 var wpaSupplicantConf = await this.wpa.GetWPASupplicantConfAsync();
-                countryCode = wpaSupplicantConf.Country.Alpha2;
+                countryCode = wpaSupplicantConf?.Country?.Alpha2;
             }
 
             if (string.IsNullOrWhiteSpace(countryCode))
@@ -412,7 +412,9 @@ namespace RaspberryPi.Network
                 var contentRegex = new Regex(@"\s*(?<PropertyName>.*):(\s*)(?<PropertyValue>.*)");
                 var matches = contentRegex.Matches(content).OfType<Match>();
                 
-                var connectedTimeSpan = TimeSpan.FromSeconds(double.Parse(RegexExtensions.ParseValue(matches, "connected time").Replace(" seconds", "")));
+                var connectedTime = RegexExtensions.ParseValue(matches, "connected time")
+                    ?? throw new InvalidOperationException("Connected time is missing.");
+                var connectedTimeSpan = TimeSpan.FromSeconds(double.Parse(connectedTime.Replace(" seconds", "")));
 
                 clients.Add(new ConnectedAccessPointClient
                 {

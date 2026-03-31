@@ -7,8 +7,8 @@ namespace RaspberryPi.Network
     [DebuggerDisplay("NetworkInterface: {this.Name}")]
     public class NetworkInterface : INetworkInterface
     {
-        private SystemNetworkInterface networkInterface;
-        private readonly string name;
+        private SystemNetworkInterface? networkInterface;
+        private readonly string? name;
 
         public NetworkInterface(SystemNetworkInterface networkInterface)
         {
@@ -30,7 +30,7 @@ namespace RaspberryPi.Network
             this.name = name;
         }
 
-        public string Name => this.networkInterface?.Name ?? this.name;
+        public string Name => this.networkInterface?.Name ?? this.name!;
 
         public string GetPhysicalName()
         {
@@ -39,7 +39,7 @@ namespace RaspberryPi.Network
             return physicalName;
         }
         
-        public string GetVirtualName()
+        public string? GetVirtualName()
         {
             var split = this.Name.Split(new[] { '@' }, StringSplitOptions.None);
             var physicalName = split.Length == 2 ? split[0] : null;

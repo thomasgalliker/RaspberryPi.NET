@@ -4,12 +4,12 @@
     {
         void SetHostname(string hostname);
 
-        Task<CpuInfo> GetCpuInfoAsync();
+        Task<CpuInfo?> GetCpuInfoAsync();
 
-        CpuSensorsStatus GetCpuSensorsStatus();
+        CpuSensorsStatus? GetCpuSensorsStatus();
 
-        MemoryInfo GetMemoryInfo();
+        MemoryInfo? GetMemoryInfo();
 
-        Task<HostInfo> GetHostInfoAsync();
+        Task<HostInfo?> GetHostInfoAsync();
     }
 }

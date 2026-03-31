@@ -39,7 +39,7 @@ namespace RaspiAP.Commands
 
             public async Task<int> InvokeAsync(InvocationContext context)
             {
-                INetworkInterface iface;
+                INetworkInterface? iface;
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     iface = this.networkInterfaceService.GetAll()
@@ -48,6 +48,11 @@ namespace RaspiAP.Commands
                 else
                 {
                     iface = this.networkInterfaceService.GetByName("wlan0");
+                }
+
+                if (iface == null)
+                {
+                    throw new InvalidOperationException("No wireless network interface was found.");
                 }
 
                 var ssids = this.wpa.ScanSSIDs(iface).ToList();

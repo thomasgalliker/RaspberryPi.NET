@@ -109,7 +109,7 @@ namespace RaspberryPi.Network
 
                         // Select it
                         var selectResult = this.processRunner.ExecuteCommand($"wpa_cli -i {iface.Name} select_network {networkIndex}");
-                        if (selectResult.OutputData.Trim() != "OK")
+                        if ((selectResult.OutputData ?? string.Empty).Trim() != "OK")
                         {
                             //result.AppendLine(selectResult);
                         }

@@ -36,7 +36,7 @@ namespace RaspberryPi.Tests.Network
             this.autoMocker.Use<ILogger<WPA>>(new TestOutputHelperLogger<WPA>(testOutputHelper));
 
             var fileSystemMock = this.autoMocker.GetMock<IFileSystem>();
-            fileSystemMock.Setup(f => f.Directory.Exists(Path.GetDirectoryName(WPA.WpaSupplicantConfFilePath)))
+            fileSystemMock.Setup(f => f.Directory.Exists(Path.GetDirectoryName(WPA.WpaSupplicantConfFilePath)!))
                 .Returns(true);
             fileSystemMock.Setup(f => f.File.Exists("/bin/bash"))
                 .Returns(true);
@@ -183,7 +183,8 @@ namespace RaspberryPi.Tests.Network
 
             var wpa = this.autoMocker.CreateInstance<WPA>();
             var wpaSupplicantConf = await wpa.GetWPASupplicantConfAsync();
-            wpaSupplicantConf.Country = Countries.Germany;
+            wpaSupplicantConf.Should().NotBeNull();
+            wpaSupplicantConf!.Country = Countries.Germany;
             wpaSupplicantConf.APScan = 0;
             wpaSupplicantConf.Networks = new[]
             {
@@ -222,7 +223,7 @@ namespace RaspberryPi.Tests.Network
         {
             // Arrange
             var fileSystemMock = this.autoMocker.GetMock<IFileSystem>();
-            fileSystemMock.Setup(f => f.Directory.Exists(Path.GetDirectoryName(WPA.WpaSupplicantConfFilePath)))
+            fileSystemMock.Setup(f => f.Directory.Exists(Path.GetDirectoryName(WPA.WpaSupplicantConfFilePath)!))
                 .Returns(true);
             fileSystemMock.Setup(f => f.File.Exists(WPA.WpaSupplicantConfFilePath))
                 .Returns(true);
@@ -272,7 +273,7 @@ namespace RaspberryPi.Tests.Network
         {
             // Arrange
             var fileSystemMock = this.autoMocker.GetMock<IFileSystem>();
-            fileSystemMock.Setup(f => f.Directory.Exists(Path.GetDirectoryName(WPA.WpaSupplicantConfFilePath)))
+            fileSystemMock.Setup(f => f.Directory.Exists(Path.GetDirectoryName(WPA.WpaSupplicantConfFilePath)!))
                 .Returns(false);
             fileSystemMock.Setup(f => f.File.Exists(WPA.WpaSupplicantConfFilePath))
                 .Returns(true);
@@ -328,7 +329,7 @@ namespace RaspberryPi.Tests.Network
         {
             // Arrange
             var fileSystemMock = this.autoMocker.GetMock<IFileSystem>();
-            fileSystemMock.Setup(f => f.Directory.Exists(Path.GetDirectoryName(WPA.WpaSupplicantConfFilePath)))
+            fileSystemMock.Setup(f => f.Directory.Exists(Path.GetDirectoryName(WPA.WpaSupplicantConfFilePath)!))
                 .Returns(false);
             fileSystemMock.Setup(f => f.File.Exists(WPA.WpaSupplicantConfFilePath))
                 .Returns(true);

@@ -2,8 +2,8 @@
 {
     public class MemoryInfo
     {
-        public RandomAccessMemoryStatus RandomAccessMemory { get; set; }
+        public RandomAccessMemoryStatus? RandomAccessMemory { get; set; }
 
-        public MemoryStatus Swap { get; set; }
+        public MemoryStatus? Swap { get; set; }
     }
 }

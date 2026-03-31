@@ -23,7 +23,7 @@
 
         public int ExitCode { get; } = DefaultErrorExitCode;
 
-        public string ErrorData { get; }
+        public string? ErrorData { get; }
 
         public override string ToString()
         {

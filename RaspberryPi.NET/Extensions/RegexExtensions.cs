@@ -14,12 +14,12 @@ namespace RaspberryPi.Extensions
             return ParseValue(matches, propertyName, value => value == "yes" ? true : false);
         }
 
-        internal static string ParseValue(IEnumerable<Match> matches, string propertyName)
+        internal static string? ParseValue(IEnumerable<Match> matches, string propertyName)
         {
             return ParseValue(matches, propertyName, value => value);
         }
 
-        internal static T ParseValue<T>(IEnumerable<Match> matches, string propertyName, Func<string, T> convert)
+        internal static T? ParseValue<T>(IEnumerable<Match> matches, string propertyName, Func<string?, T> convert)
         {
             var group = matches.Where(m => m.Groups["PropertyName"].Value == propertyName).Select(m => m.Groups).SingleOrDefault();
             if (group == null)
@@ -44,7 +44,7 @@ namespace RaspberryPi.Extensions
         //    return true;
         //}
 
-        internal static bool TryParseValue(MatchCollection matches, string propertyName, out string value)
+        internal static bool TryParseValue(MatchCollection matches, string propertyName, out string? value)
         {
             var match = matches.OfType<Match>().Where(m => m.Groups["Key"].Value == propertyName).SingleOrDefault();
             if (match == null)

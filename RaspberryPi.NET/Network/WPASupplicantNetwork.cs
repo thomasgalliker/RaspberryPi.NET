@@ -12,7 +12,7 @@ namespace RaspberryPi.Network
         /// <summary>
         /// Network name (as announced by the access point). An ASCII or hex string.
         /// </summary>
-        public string SSID { get; set; }
+        public string? SSID { get; set; }
 
         /// <summary>
         /// SSID scan technique; 0 (default) or 1. 
@@ -26,7 +26,7 @@ namespace RaspberryPi.Network
         /// The key is specified as 64 hex digits or as an 8-63 character ASCII passphrase.
         /// ASCII passphrases can be converted to a 256-bit key using the network SSID by the wpa_passphrase utility.
         /// </summary>
-        public string PSK { get; set; }
+        public string? PSK { get; set; }
 
         /// <summary>
         /// List of acceptable key management protocols.
@@ -37,7 +37,7 @@ namespace RaspberryPi.Network
         /// - NONE (plaintext or static WEP keys)
         /// If not set this defaults to “WPA-PSK WPA-EAP”.
         /// </summary>
-        public string KeyMgmt { get; set; }
+        public string? KeyMgmt { get; set; }
 
         /// <summary>
         /// List of acceptable protocols. One or more of:
@@ -45,7 +45,7 @@ namespace RaspberryPi.Network
         /// - RSN or WPA2 (IEEE 802.11i). WPA2 is another name for RSN .
         /// If not set this defaults to “WPA RSN”.
         /// </summary>
-        public string Proto { get; set; }
+        public string? Proto { get; set; }
 
         /// <summary>
         /// List of acceptable pairwise (unicast) ciphers for WPA. One or more of:
@@ -54,7 +54,7 @@ namespace RaspberryPi.Network
         /// - NONE (deprecated)
         /// If not set this defaults to “CCMP TKIP”.
         /// </summary>
-        public string Pairwise { get; set; }
+        public string? Pairwise { get; set; }
 
         /// <summary>
         /// List of allowed IEEE 802.11 authentication algorithms. One or more of:
@@ -63,7 +63,7 @@ namespace RaspberryPi.Network
         /// - LEAP (LEAP/Network EAP).
         /// If not set automatic selection is used (Open System with LEAP enabled if LEAP is allowed as one of the EAP methods).
         /// </summary>
-        public string AuthAlg { get; set; }
+        public string? AuthAlg { get; set; }
 
         /// <summary>
         /// Enables or disables the current network configuration.

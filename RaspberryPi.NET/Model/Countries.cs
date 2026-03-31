@@ -8,7 +8,7 @@
         public static Country FromAlpha2(string alpha2)
         {
             var country = All.FirstOrDefault(p => p.Alpha2 == alpha2);
-            if (country == default)
+            if (country is null)
             {
                 throw new ArgumentException($"Alpha2 '{alpha2}' does not map to a country", nameof(alpha2));
             }
@@ -22,7 +22,7 @@
         public static Country FromAlpha3(string alpha3)
         {
             var country = All.FirstOrDefault(p => p.Alpha3 == alpha3);
-            if (country == default)
+            if (country is null)
             {
                 throw new ArgumentException($"Alpha3 '{alpha3}' does not map to a country", nameof(alpha3));
             }

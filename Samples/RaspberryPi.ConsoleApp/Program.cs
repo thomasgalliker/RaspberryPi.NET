@@ -13,7 +13,7 @@ internal partial class Program
     {
         var assemblyVersion = Assembly.GetExecutingAssembly()
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
-            .InformationalVersion;
+            ?.InformationalVersion;
 
         Console.WriteLine(
             $"RaspberryPi.ConsoleApp version {assemblyVersion} {Environment.NewLine}" +
@@ -49,14 +49,14 @@ internal partial class Program
         var systemInfoService = serviceProvider.GetRequiredService<ISystemInfoService>();
         var cpuSensorsStatus = systemInfoService.GetCpuSensorsStatus();
         Console.WriteLine($"CPU Sensors Status:");
-        Console.WriteLine($"Temperature: {cpuSensorsStatus.Temperature}");
+        Console.WriteLine($"Temperature: {cpuSensorsStatus!.Temperature}");
         Console.WriteLine($"Voltage: {cpuSensorsStatus.Voltage}V");
         Console.WriteLine($"CurrentlyThrottled: {cpuSensorsStatus.CurrentlyThrottled}");
         Console.WriteLine();
 
         var memoryInfo = systemInfoService.GetMemoryInfo();
         Console.WriteLine($"Memory Info:");
-        Console.WriteLine($"RAM Total: {memoryInfo.RandomAccessMemory.Total.ToUnit(UnitsNet.Units.InformationUnit.Megabyte)} MB");
+        Console.WriteLine($"RAM Total: {memoryInfo!.RandomAccessMemory!.Total.ToUnit(UnitsNet.Units.InformationUnit.Megabyte)} MB");
         Console.WriteLine($"RAM Used: {memoryInfo.RandomAccessMemory.Used.ToUnit(UnitsNet.Units.InformationUnit.Megabyte)} MB");
         Console.WriteLine($"RAM Free: {memoryInfo.RandomAccessMemory.Free.ToUnit(UnitsNet.Units.InformationUnit.Megabyte)} MB");
         Console.WriteLine();

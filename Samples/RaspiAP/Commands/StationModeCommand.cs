@@ -36,7 +36,7 @@ namespace RaspiAP.Commands
         private class StationModeCommandHandler : ICommandHandler
         {
             private readonly ILogger<StationModeCommand> logger;
-            private readonly INetworkManager networkManager;
+            private readonly INetworkManager? networkManager;
             private readonly INetworkInterfaceService networkInterfaceService;
 
             public StationModeCommandHandler(
@@ -72,7 +72,7 @@ namespace RaspiAP.Commands
                     PSK = passphrase,
                 };
 
-                INetworkInterface iface;
+                INetworkInterface? iface;
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     iface = this.networkInterfaceService.GetAll()
@@ -81,6 +81,16 @@ namespace RaspiAP.Commands
                 else
                 {
                     iface = this.networkInterfaceService.GetByName("wlan0");
+                }
+
+                if (iface == null)
+                {
+                    throw new InvalidOperationException("No wireless network interface was found.");
+                }
+
+                if (this.networkManager == null)
+                {
+                    throw new InvalidOperationException("Network manager is not available.");
                 }
 
                 await this.networkManager.SetupStationModeAsync(iface, network, country);

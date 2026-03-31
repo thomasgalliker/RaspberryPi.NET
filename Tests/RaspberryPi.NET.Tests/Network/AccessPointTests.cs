@@ -37,9 +37,9 @@ namespace RaspberryPi.Tests.Network
             this.autoMocker.Use<ILogger<AccessPoint>>(new TestOutputHelperLogger<AccessPoint>(testOutputHelper));
 
             var fileSystemMock = this.autoMocker.GetMock<IFileSystem>();
-            fileSystemMock.Setup(f => f.Directory.Exists(Path.GetDirectoryName(AccessPoint.HostapdConfFilePath)))
+            fileSystemMock.Setup(f => f.Directory.Exists(Path.GetDirectoryName(AccessPoint.HostapdConfFilePath)!))
                 .Returns(true);
-            fileSystemMock.Setup(f => f.Directory.Exists(Path.GetDirectoryName(AccessPoint.DnsmasqConfFilePath)))
+            fileSystemMock.Setup(f => f.Directory.Exists(Path.GetDirectoryName(AccessPoint.DnsmasqConfFilePath)!))
                 .Returns(true);
             fileSystemMock.Setup(f => f.File.Exists("/bin/bash"))
                 .Returns(true);

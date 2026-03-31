@@ -29,45 +29,45 @@ namespace RaspberryPi.Services
 
         public ServiceType? Type { get; set; }
 
-        public string PIDFile { get; set; }
+        public string? PIDFile { get; set; }
 
-        public string WorkingDirectory { get; set; }
+        public string? WorkingDirectory { get; set; }
 
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
-        public string SyslogIdentifier { get; set; }
+        public string? SyslogIdentifier { get; set; }
 
-        public string ExecStartPre { get; set; }
+        public string? ExecStartPre { get; set; }
 
-        public string ExecStart { get; set; }
+        public string? ExecStart { get; set; }
 
-        public string ExecStop { get; set; }
+        public string? ExecStop { get; set; }
 
-        public string ExecStopPost { get; set; }
+        public string? ExecStopPost { get; set; }
 
-        public string KillSignal { get; set; }
+        public string? KillSignal { get; set; }
 
         public KillMode? KillMode { get; set; }
 
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
 
-        public string GroupName { get; set; }
+        public string? GroupName { get; set; }
 
         public ServiceRestart? Restart { get; set; }
 
         public int? RestartSec { get; set; }
 
-        public IEnumerable<string> AfterServices { get; set; }
+        public IEnumerable<string>? AfterServices { get; set; }
 
-        public IEnumerable<string> Wants { get; set; }
+        public IEnumerable<string>? Wants { get; set; }
 
-        public IEnumerable<string> WantedBy { get; set; }
+        public IEnumerable<string>? WantedBy { get; set; }
 
-        public IEnumerable<string> Environments { get; set; }
+        public IEnumerable<string>? Environments { get; set; }
 
-        public string EnvironmentFile { get; set; }
+        public string? EnvironmentFile { get; set; }
 
-        public string Busname { get; set; }
+        public string? Busname { get; set; }
 
         public string GetSystemdUnitFile()
         {
@@ -75,7 +75,7 @@ namespace RaspberryPi.Services
             stringBuilder.AppendLine("[Unit]");
             if (!string.IsNullOrEmpty(this.Description))
             {
-                stringBuilder.AppendLine($"Description={this.Description.Replace(Environment.NewLine, " ")}");
+                stringBuilder.AppendLine($"Description={this.Description!.Replace(Environment.NewLine, " ")}");
             }
 
             if (this.AfterServices != null && this.AfterServices.Any())

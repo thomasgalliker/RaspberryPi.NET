@@ -9,12 +9,12 @@
 
         public IReadOnlyCollection<ProcessorInfo> Processors { get; set; }
 
-        public string Hardware { get; set; }
+        public string? Hardware { get; set; }
 
-        public string Revision { get; set; }
+        public string? Revision { get; set; }
 
-        public string Serial { get; set; }
+        public string? Serial { get; set; }
 
-        public string Model { get; set; }
+        public string? Model { get; set; }
     }
 }

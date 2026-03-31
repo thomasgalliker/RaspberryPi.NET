@@ -38,7 +38,7 @@ namespace RaspberryPi
         }
 
         /// <inheritdoc/>
-        public async Task<HostInfo> GetHostInfoAsync()
+        public async Task<HostInfo?> GetHostInfoAsync()
         {
             var hostInfo = new HostInfo();
 
@@ -83,7 +83,7 @@ namespace RaspberryPi
 
         /// <inheritdoc/>
         [Obsolete]
-        public async Task<CpuInfo> GetCpuInfoAsync()
+        public async Task<CpuInfo?> GetCpuInfoAsync()
         {
             var processorInfos = new List<ProcessorInfo>();
             var cpuInfo = new CpuInfo
@@ -116,6 +116,11 @@ namespace RaspberryPi
 
                 if (processorInfo != null)
                 {
+                    if (line == null)
+                    {
+                        break;
+                    }
+
                     if (CheckLineStartsWith(line, "processor"))
                     {
                         processorInfo.Processor = ReadLineValue(line);
@@ -150,7 +155,7 @@ namespace RaspberryPi
         }
 
         /// <inheritdoc/>
-        public CpuSensorsStatus GetCpuSensorsStatus()
+        public CpuSensorsStatus? GetCpuSensorsStatus()
         {
             // Sources:
             // https://github.com/rembertmagri/pi-control-panel/blob/a5e4f0bf25cd9574a7a799ad4183f57494295e24/src/Infrastructure/PiControlPanel.Infrastructure.OnDemand/Services/CpuService.cs
@@ -167,7 +172,7 @@ namespace RaspberryPi
 
             var voltage = 0d;
             result = this.processRunner.ExecuteCommand(MeasureVolts);
-            var voltageSplit = result.OutputData.Split('=');
+            var voltageSplit = (result.OutputData ?? string.Empty).Split('=');
             if (voltageSplit.Length >= 2)
             {
                 var voltsWithUnit = voltageSplit[1].Trim();
@@ -176,7 +181,8 @@ namespace RaspberryPi
             }
 
             result = this.processRunner.ExecuteCommand(GetThrottled);
-            var getThrottledResultString = result.OutputData.Substring(result.OutputData.IndexOf('x') + 1).Trim();
+            var throttledOutput = result.OutputData ?? string.Empty;
+            var getThrottledResultString = throttledOutput.Substring(throttledOutput.IndexOf('x') + 1).Trim();
             var getThrottledInBinary = Convert.ToString(Convert.ToInt32(getThrottledResultString, 16), 2);
             var binaryLength = getThrottledInBinary.Length;
 
@@ -206,11 +212,11 @@ namespace RaspberryPi
         }
 
         /// <inheritdoc/>
-        public MemoryInfo GetMemoryInfo()
+        public MemoryInfo? GetMemoryInfo()
         {
             var result = this.processRunner.ExecuteCommand(FreeBytesWide);
-            var randomAccessMemoryStatus = GetRandomAccessMemoryStatus(result.OutputData);
-            var swapMemoryStatus = GetSwapMemoryStatus(result.OutputData);
+            var randomAccessMemoryStatus = GetRandomAccessMemoryStatus(result.OutputData ?? string.Empty);
+            var swapMemoryStatus = GetSwapMemoryStatus(result.OutputData ?? string.Empty);
 
             return new MemoryInfo
             {

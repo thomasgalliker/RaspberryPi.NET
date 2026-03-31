@@ -2,8 +2,8 @@
 {
     public class ProcessorInfo
     {
-        public string Processor { get; set; }
+        public string? Processor { get; set; }
 
-        public string ModelName { get; set; }
+        public string? ModelName { get; set; }
     }
 }

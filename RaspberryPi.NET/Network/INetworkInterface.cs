@@ -8,7 +8,7 @@ namespace RaspberryPi.Network
 
         public string GetPhysicalName();
         
-        public string GetVirtualName();
+        public string? GetVirtualName();
         
         public OperationalStatus OperationalStatus { get; }
 

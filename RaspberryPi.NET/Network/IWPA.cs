@@ -6,7 +6,7 @@
         /// Reports the current configuration of the network.
         /// </summary>
         [Obsolete]
-        Task<string> GetReportAsync();
+        Task<string?> GetReportAsync();
 
         /// <summary>
         /// Starts the wpa_supplicant service.
@@ -45,7 +45,7 @@
         /// Gets the current wpa_supplicant.conf.
         /// </summary>
         /// <returns>The wpa_supplicant.conf.</returns>
-        Task<WPASupplicantConf> GetWPASupplicantConfAsync();
+        Task<WPASupplicantConf?> GetWPASupplicantConfAsync();
 
         /// <summary>
         /// Sets the wpa_supplicant.conf with the given <paramref name="config"/>.
@@ -58,7 +58,7 @@
         /// </summary>
         /// <param name="ssid">The SSID.</param>
         /// <returns>The network section with given SSID.</returns>
-        Task<WPASupplicantNetwork> GetNetworkAsync(string ssid);
+        Task<WPASupplicantNetwork?> GetNetworkAsync(string ssid);
 
         /// <summary>
         /// Adds or updates the network configuration given in <paramref name="network"/> which matches the SSID.

@@ -82,7 +82,7 @@ namespace RaspiAP
             return services.BuildServiceProvider();
         }
 
-        private static void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
         {
             if (e.Exception is Exception ex)
             {

@@ -18,7 +18,7 @@ namespace RaspberryPi.Network
         private const int PskMaxLength = 64;
         private const string ESSID = "ESSID:\"";
         private const int FileBufferSize = 1024;
-        private static readonly string[] NewLineChars = new string[] { "\n", "\r\n" };
+        private static readonly string[] NewLineChars = new [] { "\n", "\r\n" };
 
         private readonly ILogger logger;
         private readonly ISystemCtl systemCtl;
@@ -73,7 +73,8 @@ namespace RaspberryPi.Network
         {
             if (!this.fileSystem.File.Exists(WpaSupplicantConfFilePath))
             {
-                throw new InvalidOperationException($"No WiFi configuration found. Use {nameof(AddOrUpdateNetworkAsync)} to configure at least one SSID.");
+                throw new InvalidOperationException(
+                    $"No WiFi configuration found. Use {nameof(AddOrUpdateNetworkAsync)} to configure at least one SSID.");
             }
         }
 
@@ -94,9 +95,9 @@ namespace RaspberryPi.Network
         /// <inheritdoc/>
         public IEnumerable<string> GetConnectedSSIDs()
         {
-            var commandLineResult = this.processRunner.ExecuteCommand($"iwgetid -r");
+            var commandLineResult = this.processRunner.ExecuteCommand("iwgetid -r");
 
-            return commandLineResult.OutputData
+            return (commandLineResult.OutputData ?? string.Empty)
                 .Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
         }
 
@@ -110,24 +111,24 @@ namespace RaspberryPi.Network
 
             var commandLineResult = this.processRunner.ExecuteCommand($"iwgetid {iface.Name} -r");
 
-            return commandLineResult.OutputData
+            return (commandLineResult.OutputData ?? string.Empty)
                 .Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
         }
 
         [Obsolete("Use GetWPASupplicantConfAsync")]
-        /// <inheritdoc/>
         public async Task<IEnumerable<string>> GetSSIDsAsync()
         {
             var ssids = new List<string>();
             if (this.fileSystem.File.Exists(WpaSupplicantConfFilePath))
             {
-                using var reader = this.fileSystem.FileStreamFactory.CreateStreamReader(WpaSupplicantConfFilePath, FileMode.Open, FileAccess.Read);
+                using var reader =
+                    this.fileSystem.FileStreamFactory.CreateStreamReader(WpaSupplicantConfFilePath, FileMode.Open, FileAccess.Read);
 
                 var inNetworkSection = false;
-                string ssid = null;
+                string? ssid = null;
                 while (!reader.EndOfStream)
                 {
-                    var line = (await reader.ReadLineAsync()).TrimStart();
+                    var line = (await reader.ReadLineAsync())?.TrimStart() ?? string.Empty;
                     if (inNetworkSection)
                     {
                         if (ssid == null)
@@ -146,6 +147,7 @@ namespace RaspberryPi.Network
                                 ssids.Add(ssid);
                                 ssid = null;
                             }
+
                             inNetworkSection = false;
                         }
                     }
@@ -168,9 +170,9 @@ namespace RaspberryPi.Network
         /// Report the current WiFi stations
         /// </summary>
         /// <returns></returns>
-        public async Task<string> GetReportAsync()
+        public async Task<string?> GetReportAsync()
         {
-            var ssids = await this.GetSSIDsAsync();
+            var ssids = (await this.GetSSIDsAsync()).ToArray();
             if (ssids.Any())
             {
                 StringBuilder builder = new();
@@ -189,17 +191,17 @@ namespace RaspberryPi.Network
                     if (iface.OperationalStatus == OperationalStatus.Up && iface.Name.StartsWith("w"))
                     {
                         var ipAddress = (from item in iface.GetIPProperties().UnicastAddresses
-                                         where item.Address.AddressFamily == AddressFamily.InterNetwork
-                                         select item.Address).FirstOrDefault() ?? IPAddress.Any;
+                            where item.Address.AddressFamily == AddressFamily.InterNetwork
+                            select item.Address).FirstOrDefault() ?? IPAddress.Any;
                         var netMask = (from item in iface.GetIPProperties().UnicastAddresses
-                                       where item.Address.AddressFamily == AddressFamily.InterNetwork
-                                       select item.IPv4Mask).FirstOrDefault() ?? IPAddress.Any;
+                            where item.Address.AddressFamily == AddressFamily.InterNetwork
+                            select item.IPv4Mask).FirstOrDefault() ?? IPAddress.Any;
                         var gateway = (from item in iface.GetIPProperties().GatewayAddresses
-                                       where item.Address.AddressFamily == AddressFamily.InterNetwork
-                                       select item.Address).FirstOrDefault() ?? IPAddress.Any;
+                            where item.Address.AddressFamily == AddressFamily.InterNetwork
+                            select item.Address).FirstOrDefault() ?? IPAddress.Any;
                         var dnsServer = (from item in iface.GetIPProperties().DnsAddresses
-                                         where item.AddressFamily == AddressFamily.InterNetwork
-                                         select item).FirstOrDefault() ?? IPAddress.Any;
+                            where item.AddressFamily == AddressFamily.InterNetwork
+                            select item).FirstOrDefault() ?? IPAddress.Any;
                         builder.AppendLine($"IP={ipAddress} GW={gateway} NM={netMask} DNS={dnsServer}");
                         break;
                     }
@@ -222,13 +224,13 @@ namespace RaspberryPi.Network
 
             var commandLineResult = this.processRunner.ExecuteCommand($"sudo iwlist {iface.Name} scan");
 
-            return commandLineResult.OutputData.Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries)
-               .Where(line => line.Contains(ESSID))
-               .Select(line => line.Substring(line.IndexOf(ESSID) + ESSID.Length).TrimEnd('"'));
+            return (commandLineResult.OutputData ?? string.Empty).Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries)
+                .Where(line => line.Contains(ESSID))
+                .Select(line => line.Substring(line.IndexOf(ESSID, StringComparison.Ordinal) + ESSID.Length).TrimEnd('"'));
         }
 
         /// <inheritdoc/>
-        public async Task<WPASupplicantConf> GetWPASupplicantConfAsync()
+        public async Task<WPASupplicantConf?> GetWPASupplicantConfAsync()
         {
             this.logger.LogDebug("GetWPASupplicantConfAsync");
 
@@ -249,22 +251,22 @@ namespace RaspberryPi.Network
                     var keyValueRegex = new Regex(@"^(\s*)(?<Key>[^={}]*)=(?<Value>.*)", RegexOptions.Multiline);
                     var matchesAll = keyValueRegex.Matches(fileContent);
 
-                    if (RegexExtensions.TryParseValue(matchesAll, "ctrl_interface", out var ctrlInterface))
+                    if (RegexExtensions.TryParseValue(matchesAll, "ctrl_interface", out var ctrlInterface) && ctrlInterface != null)
                     {
                         conf.CtrlInterface = ctrlInterface;
                     }
 
-                    if (RegexExtensions.TryParseValue(matchesAll, "ap_scan", out var apscan))
+                    if (RegexExtensions.TryParseValue(matchesAll, "ap_scan", out var apscan) && apscan != null)
                     {
                         conf.APScan = int.Parse(apscan);
                     }
 
-                    if (RegexExtensions.TryParseValue(matchesAll, "update_config", out var updateConfig))
+                    if (RegexExtensions.TryParseValue(matchesAll, "update_config", out var updateConfig) && updateConfig != null)
                     {
                         conf.UpdateConfig = int.Parse(updateConfig);
                     }
 
-                    if (RegexExtensions.TryParseValue(matchesAll, "country", out var country))
+                    if (RegexExtensions.TryParseValue(matchesAll, "country", out var country) && country != null)
                     {
                         conf.Country = Countries.FromAlpha2(country);
                     }
@@ -275,17 +277,17 @@ namespace RaspberryPi.Network
                         var networkMatches = keyValueRegex.Matches(networkSplitItem);
                         var network = new WPASupplicantNetwork();
 
-                        if (RegexExtensions.TryParseValue(networkMatches, "ssid", out var ssid))
+                        if (RegexExtensions.TryParseValue(networkMatches, "ssid", out var ssid) && ssid != null)
                         {
                             network.SSID = ssid.Replace("\"", "");
                         }
 
-                        if (RegexExtensions.TryParseValue(networkMatches, "scan_ssid", out var scanssid))
+                        if (RegexExtensions.TryParseValue(networkMatches, "scan_ssid", out var scanssid) && scanssid != null)
                         {
                             network.ScanSSID = ConvertIntStringToBool(scanssid);
                         }
 
-                        if (RegexExtensions.TryParseValue(networkMatches, "psk", out var psk))
+                        if (RegexExtensions.TryParseValue(networkMatches, "psk", out var psk) && psk != null)
                         {
                             if (psk.StartsWith("\"") && psk.EndsWith("\""))
                             {
@@ -317,7 +319,7 @@ namespace RaspberryPi.Network
                             network.AuthAlg = authAlg;
                         }
 
-                        if (RegexExtensions.TryParseValue(networkMatches, "disabled", out var disabled))
+                        if (RegexExtensions.TryParseValue(networkMatches, "disabled", out var disabled) && disabled != null)
                         {
                             network.Disabled = ConvertIntStringToBool(disabled);
                         }
@@ -342,25 +344,30 @@ namespace RaspberryPi.Network
 
             if (conf.Country == null)
             {
-                throw new ArgumentNullException($"{nameof(conf)}.{nameof(conf.Country)}", $"Parameter '{nameof(conf)}.{nameof(conf.Country)}' must not be null");
+                throw new ArgumentNullException($"{nameof(conf)}.{nameof(conf.Country)}",
+                    $"Parameter '{nameof(conf)}.{nameof(conf.Country)}' must not be null");
             }
 
             if (conf.Networks.Any(n => string.IsNullOrEmpty(n.SSID)))
             {
-                throw new ArgumentException($"Parameter '{nameof(conf)}.{nameof(conf.Networks)}.{nameof(WPASupplicantNetwork.SSID)}' must not be null or empty", $"{nameof(conf)}.{nameof(conf.Networks)}.{nameof(WPASupplicantNetwork.SSID)}");
+                throw new ArgumentException(
+                    $"Parameter '{nameof(conf)}.{nameof(conf.Networks)}.{nameof(WPASupplicantNetwork.SSID)}' must not be null or empty",
+                    $"{nameof(conf)}.{nameof(conf.Networks)}.{nameof(WPASupplicantNetwork.SSID)}");
             }
 
             //if (conf.Networks.Any(n => string.IsNullOrEmpty(n.PSK) && n.KeyMgmt != "NONE"))
             //{
             //}
 
-            if (conf.Networks.Any(n => !string.IsNullOrEmpty(n.PSK) && (n.PSK.Length < PskMinLength || n.PSK.Length > PskMaxLength)))
+            if (conf.Networks.Any(n => !string.IsNullOrEmpty(n.PSK) && n.PSK.Length is < PskMinLength or > PskMaxLength))
             {
-                throw new ArgumentException($"Parameter '{nameof(conf)}.{nameof(conf.Networks)}.{nameof(WPASupplicantNetwork.PSK)}' must be between {PskMinLength} and {PskMaxLength} characters.", $"{nameof(conf)}.{nameof(conf.Networks)}.{nameof(WPASupplicantNetwork.PSK)}");
+                throw new ArgumentException(
+                    $"Parameter '{nameof(conf)}.{nameof(conf.Networks)}.{nameof(WPASupplicantNetwork.PSK)}' must be between {PskMinLength} and {PskMaxLength} characters.",
+                    $"{nameof(conf)}.{nameof(conf.Networks)}.{nameof(WPASupplicantNetwork.PSK)}");
             }
 
             var wpaSupplicantDir = Path.GetDirectoryName(WpaSupplicantConfFilePath);
-            if (!this.fileSystem.Directory.Exists(wpaSupplicantDir))
+            if (!string.IsNullOrEmpty(wpaSupplicantDir) && !this.fileSystem.Directory.Exists(wpaSupplicantDir))
             {
                 this.fileSystem.Directory.CreateDirectory(wpaSupplicantDir);
             }
@@ -389,59 +396,56 @@ namespace RaspberryPi.Network
                     await writer.WriteLineAsync($"country={conf.Country.Alpha2}");
                     await writer.WriteLineAsync();
 
-                    if (conf.Networks != null)
+                    foreach (var network in conf.Networks)
                     {
-                        foreach (var network in conf.Networks)
+                        await writer.WriteLineAsync("network={");
+                        await writer.WriteLineAsync($"\tssid=\"{network.SSID}\"");
+
+                        if (network.ScanSSID)
                         {
-                            await writer.WriteLineAsync("network={");
-                            await writer.WriteLineAsync($"\tssid=\"{network.SSID}\"");
-
-                            if (network.ScanSSID)
-                            {
-                                await writer.WriteLineAsync($"\tscan_ssid={ConvertBoolToIntString(network.ScanSSID)}");
-                            }
-
-                            if (!string.IsNullOrEmpty(network.PSK))
-                            {
-                                if (network.PSK.Length < 64)
-                                {
-                                    var pskHash = WPAPassphrase.GetHash(network.SSID, network.PSK);
-                                    await writer.WriteLineAsync($"\tpsk={pskHash}");
-                                }
-                                else
-                                {
-                                    await writer.WriteLineAsync($"\tpsk={network.PSK}");
-                                }
-                            }
-
-                            if (!string.IsNullOrEmpty(network.KeyMgmt))
-                            {
-                                await writer.WriteLineAsync($"\tkey_mgmt={network.KeyMgmt}");
-                            }
-
-                            if (!string.IsNullOrEmpty(network.Proto))
-                            {
-                                await writer.WriteLineAsync($"\tproto={network.Proto}");
-                            }
-
-                            if (!string.IsNullOrEmpty(network.Pairwise))
-                            {
-                                await writer.WriteLineAsync($"\tpairwise={network.Pairwise}");
-                            }
-
-                            if (!string.IsNullOrEmpty(network.AuthAlg))
-                            {
-                                await writer.WriteLineAsync($"\tauth_alg={network.AuthAlg}");
-                            }
-
-                            if (network.Disabled)
-                            {
-                                await writer.WriteLineAsync($"\tdisabled={ConvertBoolToIntString(network.Disabled)}");
-                            }
-
-                            await writer.WriteLineAsync("}");
-                            await writer.WriteLineAsync();
+                            await writer.WriteLineAsync($"\tscan_ssid={ConvertBoolToIntString(network.ScanSSID)}");
                         }
+
+                        if (!string.IsNullOrEmpty(network.PSK))
+                        {
+                            if (network.PSK.Length < 64)
+                            {
+                                var pskHash = WPAPassphrase.GetHash(network.SSID!, network.PSK);
+                                await writer.WriteLineAsync($"\tpsk={pskHash}");
+                            }
+                            else
+                            {
+                                await writer.WriteLineAsync($"\tpsk={network.PSK}");
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(network.KeyMgmt))
+                        {
+                            await writer.WriteLineAsync($"\tkey_mgmt={network.KeyMgmt}");
+                        }
+
+                        if (!string.IsNullOrEmpty(network.Proto))
+                        {
+                            await writer.WriteLineAsync($"\tproto={network.Proto}");
+                        }
+
+                        if (!string.IsNullOrEmpty(network.Pairwise))
+                        {
+                            await writer.WriteLineAsync($"\tpairwise={network.Pairwise}");
+                        }
+
+                        if (!string.IsNullOrEmpty(network.AuthAlg))
+                        {
+                            await writer.WriteLineAsync($"\tauth_alg={network.AuthAlg}");
+                        }
+
+                        if (network.Disabled)
+                        {
+                            await writer.WriteLineAsync($"\tdisabled={ConvertBoolToIntString(network.Disabled)}");
+                        }
+
+                        await writer.WriteLineAsync("}");
+                        await writer.WriteLineAsync();
                     }
                 }
             }
@@ -456,7 +460,7 @@ namespace RaspberryPi.Network
             this.logger.LogDebug($"SetWPASupplicantConfAsync finished successfully");
         }
 
-        public async Task<WPASupplicantNetwork> GetNetworkAsync(string ssid)
+        public async Task<WPASupplicantNetwork?> GetNetworkAsync(string ssid)
         {
             var conf = await this.GetWPASupplicantConfAsync();
             conf ??= new WPASupplicantConf();
@@ -492,7 +496,8 @@ namespace RaspberryPi.Network
             var conf = await this.GetWPASupplicantConfAsync();
             conf ??= new WPASupplicantConf();
 
-            var existingNetwork = conf.Networks.SingleOrDefault(n => string.Equals(n.SSID, ssid, StringComparison.InvariantCultureIgnoreCase));
+            var existingNetwork =
+                conf.Networks.SingleOrDefault(n => string.Equals(n.SSID, ssid, StringComparison.InvariantCultureIgnoreCase));
             if (existingNetwork == null)
             {
                 throw new InvalidOperationException($"Network with ssid={ssid} does not exist.");
@@ -505,7 +510,7 @@ namespace RaspberryPi.Network
 
         private static bool ConvertIntStringToBool(string disabled)
         {
-            return int.Parse(disabled) == 1 ? true : false;
+            return int.Parse(disabled) == 1;
         }
 
         private static string ConvertBoolToIntString(bool value)

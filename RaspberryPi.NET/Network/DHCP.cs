@@ -65,22 +65,22 @@ namespace RaspberryPi.Network
             /// <summary>
             /// Name of the interface
             /// </summary>
-            public string Interface { get; set; }
+            public string? Interface { get; set; }
 
             /// <summary>
             /// IP address
             /// </summary>
-            public IPAddress IP { get; set; }
+            public IPAddress? IP { get; set; }
 
             /// <summary>
             /// Gateway
             /// </summary>
-            public IPAddress Gateway { get; set; }
+            public IPAddress? Gateway { get; set; }
 
             /// <summary>
             /// Subnet mask
             /// </summary>
-            public IPAddress Subnet { get; set; }
+            public IPAddress? Subnet { get; set; }
 
             /// <summary>
             /// Get or set the subnet mask in CIDR notation
@@ -90,7 +90,7 @@ namespace RaspberryPi.Network
                 get
                 {
                     var cidr = 0;
-                    var subnetMask = BitConverter.ToUInt32(this.Subnet.GetAddressBytes(), 0);
+                    var subnetMask = BitConverter.ToUInt32(this.Subnet!.GetAddressBytes(), 0);
                     for (var i = 0; i < 32; i++)
                     {
                         if ((subnetMask & (1u << i)) != 0)
@@ -124,7 +124,7 @@ namespace RaspberryPi.Network
             /// <summary>
             /// DNS server
             /// </summary>
-            public IPAddress DNSServer { get; set; }
+            public IPAddress? DNSServer { get; set; }
 
             /// <summary>
             /// Set to true if the configuration is intended for AP mode
@@ -133,7 +133,7 @@ namespace RaspberryPi.Network
         }
 
         /// <inheritdoc/>
-        public async Task SetIPAddressAsync(INetworkInterface iface, IPAddress? ip, IPAddress? netmask, IPAddress? gateway, IPAddress dnsServer, bool? forAP = null)
+        public async Task SetIPAddressAsync(INetworkInterface iface, IPAddress? ip, IPAddress? netmask, IPAddress? gateway, IPAddress? dnsServer, bool? forAP = null)
         {
             if (iface == null)
             {
@@ -149,10 +149,10 @@ namespace RaspberryPi.Network
             {
                 if (profile.Interface == iface.Name)
                 {
-                    if ((ip == null || ip == profile.IP) &&
-                        (netmask == null || netmask == profile.Subnet) &&
-                        (gateway == null || gateway == profile.Gateway) &&
-                        (dnsServer == null || dnsServer == profile.DNSServer) &&
+                    if ((ip == null || Equals(ip, profile.IP)) &&
+                        (netmask == null || Equals(netmask, profile.Subnet)) &&
+                        (gateway == null || Equals(gateway, profile.Gateway)) &&
+                        (dnsServer == null || Equals(dnsServer, profile.DNSServer)) &&
                         (forAP == null || forAP == profile.ForAP))
                     {
                         // Config remains unchanged; no need to rewrite the config
@@ -169,7 +169,7 @@ namespace RaspberryPi.Network
                     // It is and will remain enabled; no need to rewrite the config
                 }
             }
-            else if (existingProfile != null && !existingProfile.ForAP && forAP != true)
+            else if (existingProfile is { ForAP: false } && forAP != true)
             {
                 // Static config - replace missing settings with parsed settings from the old config
                 ip ??= existingProfile.IP;
@@ -213,6 +213,10 @@ namespace RaspberryPi.Network
                 while (!reader.EndOfStream)
                 {
                     var line = await reader.ReadLineAsync();
+                    if (line == null)
+                    {
+                        break;
+                    }
                     var match = IfaceRegex.Match(line);
                     if (match.Success)
                     {
@@ -331,11 +335,15 @@ namespace RaspberryPi.Network
                 // Rewrite the config line by line
                 var lastLineEmpty = true;
                 var profileWritten = false;
-                string line = null;
-                string currentInterfaceName = null;
+                string? line = null;
+                string? currentInterfaceName = null;
                 while (!reader.EndOfStream)
                 {
                     line = await reader.ReadLineAsync();
+                    if (line == null)
+                    {
+                        break;
+                    }
 
                     // Is this the first line of a new profile?
                     var match = IfaceRegex.Match(line);
@@ -384,7 +392,7 @@ namespace RaspberryPi.Network
         {
             var profiles = await this.GetDhcpProfiles();
             var ifaceProfile = profiles.FirstOrDefault(profile => profile.Interface == iface);
-            return ifaceProfile == null ? IPAddress.Any : ifaceProfile.IP;
+            return ifaceProfile?.IP ?? IPAddress.Any;
         }
 
         /// <inheritdoc/>
@@ -392,7 +400,7 @@ namespace RaspberryPi.Network
         {
             var profiles = await this.GetDhcpProfiles();
             var ifaceProfile = profiles.FirstOrDefault(profile => profile.Interface == iface);
-            return ifaceProfile == null ? IPAddress.Any : ifaceProfile.Subnet;
+            return ifaceProfile?.Subnet ?? IPAddress.Any;
         }
 
         /// <inheritdoc/>
@@ -400,7 +408,7 @@ namespace RaspberryPi.Network
         {
             var profiles = await this.GetDhcpProfiles();
             var ifaceProfile = profiles.FirstOrDefault(profile => profile.Interface == iface);
-            return ifaceProfile == null ? IPAddress.Any : ifaceProfile.Gateway;
+            return ifaceProfile?.Gateway ?? IPAddress.Any;
         }
 
         /// <inheritdoc/>
@@ -408,7 +416,7 @@ namespace RaspberryPi.Network
         {
             var profiles = await this.GetDhcpProfiles();
             var ifaceProfile = profiles.FirstOrDefault(profile => profile.Interface == iface);
-            return ifaceProfile == null ? IPAddress.Any : ifaceProfile.DNSServer;
+            return ifaceProfile?.DNSServer ?? IPAddress.Any;
         }
 
         /// <inheritdoc/>

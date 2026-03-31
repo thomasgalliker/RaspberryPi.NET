@@ -19,15 +19,15 @@ namespace RaspberryPi
             this.NumericCode = numericCode;
         }
 
-        public string Name { get; internal set; }
+        public string Name { get; internal set; } = null!;
 
-        public string Alpha2 { get; internal set; }
+        public string Alpha2 { get; internal set; } = null!;
 
-        public string Alpha3 { get; internal set; }
+        public string Alpha3 { get; internal set; } = null!;
 
         public int NumericCode { get; internal set; }
 
-        public bool Equals(Country other)
+        public bool Equals(Country? other)
         {
             if (ReferenceEquals(null, other))
             {
@@ -42,7 +42,7 @@ namespace RaspberryPi
             return string.Equals(this.Alpha2, other.Alpha2) && string.Equals(this.Alpha3, other.Alpha3) && this.NumericCode == other.NumericCode;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -73,12 +73,12 @@ namespace RaspberryPi
             }
         }
 
-        public static bool operator ==(Country left, Country right)
+        public static bool operator ==(Country? left, Country? right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(Country left, Country right)
+        public static bool operator !=(Country? left, Country? right)
         {
             return !Equals(left, right);
         }

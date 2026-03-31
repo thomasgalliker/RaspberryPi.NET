@@ -45,7 +45,7 @@ namespace RaspberryPi.Network
         //    await this.accessPoint.RestartAsync();
         //}
 
-        public async Task SetupAccessPointAsync(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel, Country country)
+        public async Task SetupAccessPointAsync(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, int? channel, Country? country)
         {
             if (iface == null)
             {
@@ -80,7 +80,7 @@ namespace RaspberryPi.Network
         }
 
         /// <inheritdoc />
-        public async Task SetupStationModeAsync(INetworkInterface iface, WPASupplicantNetwork network, Country country = null)
+        public async Task SetupStationModeAsync(INetworkInterface iface, WPASupplicantNetwork network, Country? country = null)
         {
             // https://raspberrypi.stackexchange.com/questions/117819/configure-back-to-normal-wifi-station-after-access-point-mode-hostapd
 
@@ -95,7 +95,7 @@ namespace RaspberryPi.Network
         }
 
         /// <inheritdoc />
-        public async Task ConnectToWifiNetworkAsync(INetworkInterface iface, WPASupplicantNetwork network, Country country = null)
+        public async Task ConnectToWifiNetworkAsync(INetworkInterface iface, WPASupplicantNetwork network, Country? country = null)
         {
             this.logger.LogDebug($"ConnectToWifiNetworkAsync");
 
@@ -105,7 +105,7 @@ namespace RaspberryPi.Network
 
             if (country != null)
             {
-                var config = await this.wpa.GetWPASupplicantConfAsync();
+                var config = await this.wpa.GetWPASupplicantConfAsync() ?? new WPASupplicantConf();
                 if (config.Country != country)
                 {
                     config.Country = country;

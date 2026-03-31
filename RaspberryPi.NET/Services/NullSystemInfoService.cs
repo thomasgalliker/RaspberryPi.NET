@@ -11,25 +11,25 @@ namespace RaspberryPi.Services
             this.logger = logger;
         }
 
-        public Task<CpuInfo> GetCpuInfoAsync()
+        public Task<CpuInfo?> GetCpuInfoAsync()
         {
             this.logger.LogDebug($"GetCpuInfoAsync");
-            return Task.FromResult<CpuInfo>(null);
+            return Task.FromResult<CpuInfo?>(null);
         }
 
-        public CpuSensorsStatus GetCpuSensorsStatus()
+        public CpuSensorsStatus? GetCpuSensorsStatus()
         {
             this.logger.LogDebug($"GetCpuSensorsStatus");
             return null;
         }
 
-        public Task<HostInfo> GetHostInfoAsync()
+        public Task<HostInfo?> GetHostInfoAsync()
         {
             this.logger.LogDebug($"GetHostInfoAsync");
-            return Task.FromResult<HostInfo>(null);
+            return Task.FromResult<HostInfo?>(null);
         }
 
-        public MemoryInfo GetMemoryInfo()
+        public MemoryInfo? GetMemoryInfo()
         {
             this.logger.LogDebug($"GetMemoryInfo");
             return null;

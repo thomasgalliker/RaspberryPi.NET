@@ -35,7 +35,7 @@ namespace RaspiAP.Commands
         {
             private readonly ILogger<AccessPointCommand> logger;
             private readonly INetworkManager networkManager;
-            private INetworkInterfaceService networkInterfaceService;
+            private readonly INetworkInterfaceService networkInterfaceService = null!;
 
             public AccessPointCommandHandler(
                 ILogger<AccessPointCommand> logger,
@@ -73,6 +73,11 @@ namespace RaspiAP.Commands
                 else
                 {
                     iface = this.networkInterfaceService.GetByName("wlan0");
+                }
+
+                if (iface == null)
+                {
+                    throw new InvalidOperationException("No wireless network interface was found.");
                 }
 
                 await this.networkManager.SetupAccessPointAsync(iface, ssid, passphrase, ipAddress, channel, country);

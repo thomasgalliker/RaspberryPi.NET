@@ -13,7 +13,7 @@
         }
 
 
-        public CommandLineInvocation(string executable, string arguments, string workingDirectory = null)
+        public CommandLineInvocation(string executable, string arguments, string? workingDirectory = null)
         {
             if (string.IsNullOrEmpty(executable))
             {
@@ -27,7 +27,7 @@
 
             this.Executable = executable;
             this.Arguments = arguments;
-            this.WorkingDirectory = string.IsNullOrWhiteSpace(workingDirectory) ? Environment.CurrentDirectory : workingDirectory;
+            this.WorkingDirectory = string.IsNullOrWhiteSpace(workingDirectory) ? Environment.CurrentDirectory : workingDirectory!;
         }
 
         private static (string Executable, string Arguments) ParseCommandLine(string commandLine)
