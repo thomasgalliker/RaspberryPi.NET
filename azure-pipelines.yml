@@ -81,14 +81,14 @@ steps:
     inputs:
       command: restore
       projects: |
-        RaspberryPi.NET/**/*.csproj
+        RaspberryPi/**/*.csproj
         **/*.Tests.csproj
 
   - task: DotNetCoreCLI@2
     displayName: 'Build solution'
     inputs:
       projects: |
-        RaspberryPi.NET/**/*.csproj
+        RaspberryPi/**/*.csproj
         **/*.Tests.csproj
       arguments: '--no-restore --configuration $(buildConfiguration)'
 
@@ -111,7 +111,7 @@ steps:
     displayName: 'Pack RaspberryPi.NET'
     inputs:
       command: pack
-      packagesToPack: RaspberryPi.NET/RaspberryPi.NET.csproj
+      packagesToPack: RaspberryPi/RaspberryPi.csproj
       versioningScheme: byEnvVar
       versionEnvVar: semVersion
       nobuild: true

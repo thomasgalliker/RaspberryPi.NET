@@ -1,8 +1,8 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.AutoMock;
@@ -27,8 +27,12 @@ namespace RaspberryPi.Tests.Network
         public NetworkManagerIntegrationTests(ITestOutputHelper testOutputHelper)
         {
             this.testOutputHelper = testOutputHelper;
-
             this.autoMocker = new AutoMocker();
+
+            if (!OperatingSystem.IsLinux())
+            {
+                return;
+            }
 
             this.autoMocker.Use<ILogger<NetworkManager>>(new TestOutputHelperLogger<NetworkManager>(testOutputHelper));
             this.autoMocker.Use<ILogger<NullProcessRunner>>(new TestOutputHelperLogger<NullProcessRunner>(testOutputHelper));
@@ -53,6 +57,11 @@ namespace RaspberryPi.Tests.Network
         [Fact]
         public async Task ShouldSetupAccessPoint()
         {
+            if (!OperatingSystem.IsLinux())
+            {
+                return;
+            }
+
             // Arrange
             var systemCtlMock = this.autoMocker.GetMock<ISystemCtl>();
 
@@ -86,6 +95,11 @@ namespace RaspberryPi.Tests.Network
         [Fact]
         public async Task ShouldSetupStationMode()
         {
+            if (!OperatingSystem.IsLinux())
+            {
+                return;
+            }
+
             // Arrange
             var systemCtlMock = this.autoMocker.GetMock<ISystemCtl>();
 

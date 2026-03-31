@@ -136,8 +136,8 @@ namespace RaspberryPi.Tests.Network
             // Assert
             fileSystemMock.Verify(f => f.FileStreamFactory.CreateStreamWriter(AccessPoint.HostapdConfFilePath, FileMode.Create, FileAccess.Write), Times.Once);
             fileSystemMock.Verify(f => f.FileStreamFactory.CreateStreamWriter(AccessPoint.DnsmasqConfFilePath, FileMode.Create, FileAccess.Write), Times.Once);
-            fileSystemMock.Verify(f => f.Directory.Exists(@"\etc"), Times.Once);
-            fileSystemMock.Verify(f => f.Directory.Exists(@"\etc\hostapd"), Times.Once);
+            fileSystemMock.Verify(f => f.Directory.Exists(Path.GetDirectoryName(AccessPoint.DnsmasqConfFilePath)!), Times.Once);
+            fileSystemMock.Verify(f => f.Directory.Exists(Path.GetDirectoryName(AccessPoint.HostapdConfFilePath)!), Times.Once);
             fileSystemMock.VerifyNoOtherCalls();
 
             processRunnerMock.Verify(p => p.TryExecuteCommand("sudo rfkill unblock wlan", It.IsAny<CancellationToken>()), Times.Once);

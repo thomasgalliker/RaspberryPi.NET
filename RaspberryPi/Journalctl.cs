@@ -19,7 +19,7 @@ namespace RaspberryPi
 
             var process = SystemProcess.Start(new ProcessStartInfo
             {
-                FileName = journalctlPath,
+                FileName = this.journalctlPath,
                 Arguments = $"-u {sysLogIdentifier} -b",
                 RedirectStandardOutput = true
             });

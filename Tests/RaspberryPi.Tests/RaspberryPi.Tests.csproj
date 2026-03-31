@@ -6,6 +6,7 @@
 		<AssemblyName>RaspberryPi.Tests</AssemblyName>
 		<Nullable>enable</Nullable>
 		<EnableMoqAutoMockerOptionsGenerator>false</EnableMoqAutoMockerOptionsGenerator>
+		<RootNamespace>RaspberryPi.NET.Tests</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -54,7 +55,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\RaspberryPi.NET\RaspberryPi.NET.csproj" />
+	  <ProjectReference Include="..\..\RaspberryPi\RaspberryPi.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -17,7 +17,7 @@
     <Description>.NET API for the Raspberry Pi</Description>
     <Version>1.0.0</Version>
     <Authors>Thomas Galliker</Authors>
-    <PackageId>RaspberryPi.NET</PackageId>
+    <PackageId>RaspberryPi</PackageId>
     <PackageTags>RaspberryPi;raspberry;pi;rpi;api;sdk;raspbian</PackageTags>
     <PackageIcon>logo.png</PackageIcon>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>

@@ -205,7 +205,7 @@ namespace RaspberryPi.Tests.Network
                 $"{Environment.NewLine}" +
                 $"{fileContent}");
 
-            fileContent.Should().Be(
+            fileContent.ReplaceLineEndings("\n").Should().Be((
                 "ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev\r\n" +
                 "ap_scan=0\r\n" +
                 "update_config=1\r\n" +
@@ -215,7 +215,7 @@ namespace RaspberryPi.Tests.Network
                 "\tssid=\"newssid\"\r\n" +
                 "\tpsk=f83c37fdabe8ff446a9093eecfa70adfc2bb3dfb5c2ab5baebcba0dcacac1a56\r\n" +
                 "}\r\n" +
-                "\r\n");
+                "\r\n").ReplaceLineEndings("\n"));
         }
 
         [Fact]
@@ -255,7 +255,7 @@ namespace RaspberryPi.Tests.Network
                 $"{Environment.NewLine}" +
                 $"{fileContent}");
 
-            fileContent.Should().Be(
+            fileContent.ReplaceLineEndings("\n").Should().Be((
                 "ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev\r\n" +
                 "ap_scan=1\r\n" +
                 "update_config=1\r\n" +
@@ -265,7 +265,7 @@ namespace RaspberryPi.Tests.Network
                 "\tssid=\"testssid_update\"\r\n" +
                 "\tpsk=c790cda2aa5be23e3808d2ecf42a9d8d22a1fb8a7210d5dda74feed125252be0\r\n" +
                 "}\r\n" +
-                "\r\n");
+                "\r\n").ReplaceLineEndings("\n"));
         }
 
         [Fact]
@@ -305,7 +305,7 @@ namespace RaspberryPi.Tests.Network
                 $"{Environment.NewLine}" +
                 $"{fileContent}");
 
-            fileContent.Should().Be(
+            fileContent.ReplaceLineEndings("\n").Should().Be((
                 "ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev\r\n" +
                 "ap_scan=1\r\n" +
                 "update_config=1\r\n" +
@@ -321,7 +321,7 @@ namespace RaspberryPi.Tests.Network
                 "\tssid=\"testssid_update\"\r\n" +
                 "\tpsk=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\n" +
                 "}\r\n" +
-                "\r\n");
+                "\r\n").ReplaceLineEndings("\n"));
         }
 
         [Fact]
@@ -355,12 +355,12 @@ namespace RaspberryPi.Tests.Network
                 $"{Environment.NewLine}" +
                 $"{fileContent}");
 
-            fileContent.Should().Be(
+            fileContent.ReplaceLineEndings("\n").Should().Be((
                 "ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev\r\n" +
                 "ap_scan=1\r\n" +
                 "update_config=1\r\n" +
                 "country=CH\r\n" +
-                "\r\n");
+                "\r\n").ReplaceLineEndings("\n"));
         }
     }
 }

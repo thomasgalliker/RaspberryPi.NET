@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\RaspberryPi.NET\RaspberryPi.NET.csproj" />
+    <ProjectReference Include="..\..\RaspberryPi\RaspberryPi.csproj" />
   </ItemGroup>
 
 </Project>

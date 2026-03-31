@@ -54,8 +54,8 @@ namespace RaspberryPi.Tests
 
             // Assert
             result.Should().NotBeNull();
-            result.OutputData.Should().BeEmpty();
-            result.ErrorData.Should().NotBeEmpty();
+            result.Success.Should().BeFalse();
+            (result.OutputData + result.ErrorData).Should().Contain("Could not execute because the specified command or file was not found");
         }
 
         [Fact]

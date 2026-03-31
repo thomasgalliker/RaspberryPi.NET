@@ -30,12 +30,12 @@ namespace RaspberryPi.Tests.Services
             var result = serviceDefinition.GetSystemdUnitFile();
 
             // Assert
-            result.Should().Be(
+            result.ReplaceLineEndings("\n").Should().Be((
                 "[Unit]\r\n" +
                 "\r\n" +
                 "[Service]\r\n" +
                 "Type=oneshot\r\n" +
-                "SyslogIdentifier=service.Name");
+                "SyslogIdentifier=service.Name").ReplaceLineEndings("\n"));
         }
 
         [Fact]
@@ -80,7 +80,7 @@ namespace RaspberryPi.Tests.Services
             var result = serviceDefinition.GetSystemdUnitFile();
 
             // Assert
-            result.Should().Be(
+            result.ReplaceLineEndings("\n").Should().Be((
                 "[Unit]\r\n" +
                 "Description=Test service description\r\n" +
                 "After=network-online.target firewalld.service\r\n" +
@@ -105,7 +105,7 @@ namespace RaspberryPi.Tests.Services
                 "Environment=DOTNET_ROOT=/home/pi/.dotnet\r\n" +
                 "\r\n" +
                 "[Install]\r\n" +
-                "WantedBy=multi-user.target");
+                "WantedBy=multi-user.target").ReplaceLineEndings("\n"));
         }
     }
 }
