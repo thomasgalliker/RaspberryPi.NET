@@ -1,12 +1,9 @@
-﻿using System;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NuGetUtils.CLI.Extensions;
-using RaspberryPi.Extensions;
 using RaspiAP.Commands;
 
 namespace RaspiAP
@@ -82,7 +79,7 @@ namespace RaspiAP
             return services.BuildServiceProvider();
         }
 
-        private static void OnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
         {
             if (e.Exception is Exception ex)
             {

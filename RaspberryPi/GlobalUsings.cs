@@ -1,0 +1,10 @@
+global using System.Net;
+global using System.Text;
+global using RaspberryPi;
+global using RaspberryPi.Extensions;
+global using RaspberryPi.Network;
+global using RaspberryPi.Process;
+global using RaspberryPi.Services;
+global using RaspberryPi.Storage;
+global using Directory = RaspberryPi.Storage.Directory;
+global using File = RaspberryPi.Storage.File;
