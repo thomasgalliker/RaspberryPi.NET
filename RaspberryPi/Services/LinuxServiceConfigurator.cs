@@ -23,14 +23,13 @@ namespace RaspberryPi.Services
             this.fileSystem = fileSystem;
             this.systemCtl = systemCtl;
             this.processRunner = processRunner;
-
-            this.CheckSystemPrerequisites();
         }
 
         public void UninstallService(string serviceName)
         {
             try
             {
+                this.CheckSystemPrerequisites();
                 this.logger.LogDebug($"Uninstalling systemd service \"{serviceName}\"...");
                 var systemdUnitFilePath = GetServiceFilePath(serviceName);
                 this.UninstallServiceInternal(serviceName, systemdUnitFilePath);
@@ -55,6 +54,7 @@ namespace RaspberryPi.Services
         {
             try
             {
+                this.CheckSystemPrerequisites();
                 this.logger.LogDebug($"Installing systemd service \"{serviceDefinition.ServiceName}\"...");
                 var systemdUnitFilePath = GetServiceFilePath(serviceDefinition.ServiceName);
                 this.InstallServiceInternal(systemdUnitFilePath, serviceDefinition);
@@ -78,6 +78,7 @@ namespace RaspberryPi.Services
         {
             try
             {
+                this.CheckSystemPrerequisites();
                 this.logger.LogDebug($"Reinstalling systemd service \"{serviceDefinition.ServiceName}\"...");
                 var systemdUnitFilePath = GetServiceFilePath(serviceDefinition.ServiceName);
                 this.UninstallServiceInternal(serviceDefinition.ServiceName, systemdUnitFilePath);
