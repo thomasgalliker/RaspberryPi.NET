@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using RaspberryPi.Utils;
 using Xunit;
 

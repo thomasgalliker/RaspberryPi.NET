@@ -1,6 +1,6 @@
 using System;
 using System.Threading;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using Moq.AutoMock;
 using RaspberryPi.Process;

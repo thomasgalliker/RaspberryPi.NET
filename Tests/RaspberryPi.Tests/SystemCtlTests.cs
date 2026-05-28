@@ -1,5 +1,5 @@
 using System.Threading;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.AutoMock;

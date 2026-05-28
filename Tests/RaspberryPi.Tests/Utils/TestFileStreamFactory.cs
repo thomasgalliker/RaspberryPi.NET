@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Text;
-using FluentAssertions.Equivalency;
 using RaspberryPi.Storage;
 
 namespace RaspberryPi.Tests.Utils
