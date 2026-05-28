@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-
-namespace RaspberryPi.Services
+﻿namespace RaspberryPi.Services
 {
     /// <summary>
     /// Representation of a service unit.

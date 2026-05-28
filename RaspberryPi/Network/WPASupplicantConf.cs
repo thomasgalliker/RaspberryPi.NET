@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace RaspberryPi.Network
+﻿namespace RaspberryPi.Network
 {
     /// <summary>
     /// Source: https://www.daemon-systems.org/man/wpa_supplicant.conf.5.html

@@ -1,7 +1,4 @@
-﻿using System.Net.NetworkInformation;
-using SystemNetworkInterface = System.Net.NetworkInformation.NetworkInterface;
-
-namespace RaspberryPi.Network
+﻿namespace RaspberryPi.Network
 {
     /// <inheritdoc/>
     public class NetworkInterfaceService : INetworkInterfaceService

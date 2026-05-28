@@ -1,6 +1,4 @@
-﻿using System;
-using System.CommandLine.Parsing;
-using System.Threading.Tasks;
+﻿using System.CommandLine.Parsing;
 
 namespace NuGetUtils.CLI.Extensions
 {

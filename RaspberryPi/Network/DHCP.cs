@@ -1,9 +1,4 @@
-﻿using System.Net.NetworkInformation;
-using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
-using RaspberryPi.Internals;
-
-namespace RaspberryPi.Network
+﻿namespace RaspberryPi.Network
 {
     /// <summary>
     /// Functions for IP address management via dhcpcd.

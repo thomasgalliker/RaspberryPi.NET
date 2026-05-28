@@ -1,9 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using Microsoft.Extensions.Logging;
-using Xunit.Abstractions;
-
-namespace RaspberryPi.Tests.Logging
+﻿namespace RaspberryPi.Tests.Logging
 {
     public class TestOutputHelperLogger<T> : ILogger<T>
     {

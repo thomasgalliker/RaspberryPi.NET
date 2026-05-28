@@ -1,9 +1,4 @@
-﻿using System.Net;
-using AwesomeAssertions;
-using RaspberryPi.Extensions;
-using Xunit;
-
-namespace RaspberryPi.Tests.Extensions
+﻿namespace RaspberryPi.Tests.Extensions
 {
     public class IPAddressExtensionsTests
     {

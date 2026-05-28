@@ -1,9 +1,4 @@
-﻿using System;
-using AwesomeAssertions;
-using RaspberryPi.Services;
-using Xunit;
-
-namespace RaspberryPi.Tests.Services
+﻿namespace RaspberryPi.Tests.Services
 {
     public class ServiceDefinitionTests
     {

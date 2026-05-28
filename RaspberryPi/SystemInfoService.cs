@@ -1,8 +1,4 @@
-﻿using System.Globalization;
-using System.Text.RegularExpressions;
-using UnitsNet;
-
-namespace RaspberryPi
+﻿namespace RaspberryPi
 {
     /// <inheritdoc/>
     public class SystemInfoService : ISystemInfoService

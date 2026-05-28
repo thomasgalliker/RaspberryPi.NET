@@ -1,6 +1,4 @@
 ﻿
-using UnitsNet;
-
 namespace RaspberryPi
 {
     public class CpuSensorsStatus

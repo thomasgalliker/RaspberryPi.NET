@@ -1,3 +1,1 @@
-﻿using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo("RaspberryPi.Tests")]
+﻿[assembly: InternalsVisibleTo("RaspberryPi.Tests")]

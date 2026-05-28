@@ -1,8 +1,4 @@
-﻿using System.Diagnostics;
-using System.Net.NetworkInformation;
-using SystemNetworkInterface = System.Net.NetworkInformation.NetworkInterface;
-
-namespace RaspberryPi.Network
+﻿namespace RaspberryPi.Network
 {
     [DebuggerDisplay("NetworkInterface: {this.Name}")]
     public class NetworkInterface : INetworkInterface

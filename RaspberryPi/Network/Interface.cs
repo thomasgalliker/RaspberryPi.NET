@@ -1,11 +1,4 @@
-﻿using System.Net.NetworkInformation;
-using System.Net.Sockets;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
-using Microsoft.Extensions.Logging;
-
-namespace RaspberryPi.Network
+﻿namespace RaspberryPi.Network
 {
     /// <summary>
     /// Manages network interfaces.

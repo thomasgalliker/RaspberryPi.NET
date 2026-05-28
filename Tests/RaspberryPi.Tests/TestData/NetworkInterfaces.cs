@@ -1,9 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Net.NetworkInformation;
-using Moq;
-using RaspberryPi.Network;
-
-namespace RaspberryPi.Tests.TestData
+﻿namespace RaspberryPi.Tests.TestData
 {
     internal static class NetworkInterfaces
     {

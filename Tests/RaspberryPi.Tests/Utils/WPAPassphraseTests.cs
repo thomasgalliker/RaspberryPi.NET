@@ -1,6 +1,4 @@
-﻿using AwesomeAssertions;
-using RaspberryPi.Utils;
-using Xunit;
+﻿using RaspberryPi.Utils;
 
 namespace RaspberryPi.Tests.Utils
 {

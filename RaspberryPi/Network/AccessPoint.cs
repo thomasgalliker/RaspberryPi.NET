@@ -1,11 +1,7 @@
-﻿using System.Net.NetworkInformation;
-using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
-
-namespace RaspberryPi.Network
+﻿namespace RaspberryPi.Network
 {
     /// <summary>
-    /// Functions for access point mode
+    ///     Functions for access point mode
     /// </summary>
     public class AccessPoint : IAccessPoint
     {
@@ -48,7 +44,7 @@ namespace RaspberryPi.Network
             this.networkInterfaceService = networkInterfaceService;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public bool IsEnabled()
         {
             return
@@ -64,7 +60,7 @@ namespace RaspberryPi.Network
             return testResult;
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public async Task StartAsync()
         {
             this.logger.LogDebug("StartAsync");
@@ -96,7 +92,7 @@ namespace RaspberryPi.Network
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public async Task RestartAsync()
         {
             this.logger.LogDebug("RestartAsync");
@@ -121,7 +117,7 @@ namespace RaspberryPi.Network
             this.systemCtl.RestartService(DnsmasqServiceName);
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public void Stop()
         {
             this.logger.LogDebug("Stop");
@@ -151,7 +147,8 @@ namespace RaspberryPi.Network
         {
             if (!this.fileSystem.File.Exists(HostapdConfFilePath))
             {
-                throw new InvalidOperationException($"No hostapd configuration found, use {nameof(ConfigureAsync)} method to configure the access point first"); // M589
+                throw new InvalidOperationException(
+                    $"No hostapd configuration found, use {nameof(this.ConfigureAsync)} method to configure the access point first"); // M589
             }
         }
 
@@ -159,7 +156,8 @@ namespace RaspberryPi.Network
         {
             if (!this.fileSystem.File.Exists(DnsmasqConfFilePath))
             {
-                throw new InvalidOperationException($"No dnsmasq configuration found, use {nameof(ConfigureAsync)} method to configure the access point first"); // M589
+                throw new InvalidOperationException(
+                    $"No dnsmasq configuration found, use {nameof(this.ConfigureAsync)} method to configure the access point first"); // M589
             }
         }
 
@@ -167,12 +165,13 @@ namespace RaspberryPi.Network
         {
             if (!await this.dhcp.IsAPConfiguredAsync())
             {
-                throw new InvalidOperationException($"No access point configuration found. Use {nameof(ConfigureAsync)} method to configure the access point first."); // M587
+                throw new InvalidOperationException(
+                    $"No access point configuration found. Use {nameof(this.ConfigureAsync)} method to configure the access point first."); // M587
             }
         }
 
         /// <summary>
-        /// Configure this devices as access point.
+        ///     Configure this devices as access point.
         /// </summary>
         /// <param name="ssid">SSID to use.</param>
         /// <param name="psk">Password to use.</param>
@@ -180,7 +179,8 @@ namespace RaspberryPi.Network
         /// <param name="channel">The wifi channel number. Automatically selected if null.</param>
         /// <param name="country">The country in which this access point operates. If null, country code is read from wifi configuration.</param>
         /// <returns></returns>
-        public async Task ConfigureAsync(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress, INetworkInterface[]? noDhcpInterfaces = null, int? channel = null, Country? country = null)
+        public async Task ConfigureAsync(INetworkInterface iface, string ssid, string psk, IPAddress ipAddress,
+            INetworkInterface[]? noDhcpInterfaces = null, int? channel = null, Country? country = null)
         {
             if (iface == null)
             {
@@ -199,7 +199,8 @@ namespace RaspberryPi.Network
 
             if (psk.Length is < PskMinLength or > PskMaxLength)
             {
-                throw new ArgumentNullException(nameof(psk), $"Parameter {nameof(psk)} must be between {PskMinLength} and {PskMaxLength} characters.");
+                throw new ArgumentNullException(nameof(psk),
+                    $"Parameter {nameof(psk)} must be between {PskMinLength} and {PskMaxLength} characters.");
             }
 
             if (ipAddress == null)
@@ -207,7 +208,8 @@ namespace RaspberryPi.Network
                 throw new ArgumentNullException(nameof(ipAddress), $"Parameter {nameof(ipAddress)} must not be null.");
             }
 
-            if (ipAddress == IPAddress.Any || ipAddress == IPAddress.Broadcast || ipAddress == IPAddress.None || ipAddress == IPAddress.Loopback)
+            if (ipAddress == IPAddress.Any || ipAddress == IPAddress.Broadcast || ipAddress == IPAddress.None ||
+                ipAddress == IPAddress.Loopback)
             {
                 throw new ArgumentNullException(nameof(ipAddress), $"Parameter {nameof(ipAddress)} is not valid.");
             }
@@ -235,7 +237,8 @@ namespace RaspberryPi.Network
                 channelString = DefaultChannel;
             }
 
-            this.logger.LogDebug($"ConfigureAsync: ssid={ssid}, psk={{suppressed}}, ipAddress={ipAddress}, channel={channelString}, country={countryCode}");
+            this.logger.LogDebug(
+                $"ConfigureAsync: ssid={ssid}, psk={{suppressed}}, ipAddress={ipAddress}, channel={channelString}, country={countryCode}");
 
             this.logger.LogDebug($"ConfigureAsync: Writing dnsmasq config --> {DnsmasqConfFilePath}...");
 
@@ -248,13 +251,16 @@ namespace RaspberryPi.Network
             using (var dnsmasqTemplateStream = Configurations.GetDnsmasqTemplateStream())
             {
                 using var reader = new StreamReader(dnsmasqTemplateStream);
-                using var writer = this.fileSystem.FileStreamFactory.CreateStreamWriter(DnsmasqConfFilePath, FileMode.Create, FileAccess.Write);
+                using var writer =
+                    this.fileSystem.FileStreamFactory.CreateStreamWriter(DnsmasqConfFilePath, FileMode.Create, FileAccess.Write);
 
                 // TODO: Configurable: Range size, subnet mask, dhcp leas duration
 
                 var ipAddressBytes = ipAddress.GetAddressBytes();
-                var dhcpRangeStart = $"{ipAddressBytes[0]}.{ipAddressBytes[1]}.{ipAddressBytes[2]}.{(ipAddressBytes[3] is < 100 or > 150 ? 100 : 151)}";
-                var dhcpRangeEnd = $"{ipAddressBytes[0]}.{ipAddressBytes[1]}.{ipAddressBytes[2]}.{(ipAddressBytes[3] is < 100 or > 150 ? 150 : 200)}";
+                var dhcpRangeStart =
+                    $"{ipAddressBytes[0]}.{ipAddressBytes[1]}.{ipAddressBytes[2]}.{(ipAddressBytes[3] is < 100 or > 150 ? 100 : 151)}";
+                var dhcpRangeEnd =
+                    $"{ipAddressBytes[0]}.{ipAddressBytes[1]}.{ipAddressBytes[2]}.{(ipAddressBytes[3] is < 100 or > 150 ? 150 : 200)}";
                 var dhcpRangeSubnet = IPAddress.Parse("255.255.255.0");
                 var dhcpLeaseDuration = "24h";
 
@@ -293,7 +299,8 @@ namespace RaspberryPi.Network
             using (var hostapdTemplateStream = Configurations.GetHostapdTemplateStream())
             {
                 using var reader = new StreamReader(hostapdTemplateStream);
-                using var writer = this.fileSystem.FileStreamFactory.CreateStreamWriter(HostapdConfFilePath, FileMode.Create, FileAccess.Write);
+                using var writer =
+                    this.fileSystem.FileStreamFactory.CreateStreamWriter(HostapdConfFilePath, FileMode.Create, FileAccess.Write);
 
                 var hwMode = "g"; // TODO: Make hw_mode configurable
 
@@ -336,26 +343,17 @@ namespace RaspberryPi.Network
             return new ServiceDefinition(AccessPointServiceName)
             {
                 Description = $"IEEE 802.11 {virtualName}@%i AP on %i with hostapd",
-                Wants = new[]
-                {
-                    "wpa_supplicant@%i.service"
-                },
+                Wants = new[] { "wpa_supplicant@%i.service" },
                 Type = ServiceType.Forking,
                 PIDFile = hostapdPID,
                 Restart = ServiceRestart.OnFailure,
                 RestartSec = 2,
-                Environments = new[]
-                {
-                   $"DAEMON_CONF={HostapdConfFilePath}"
-                },
+                Environments = new[] { $"DAEMON_CONF={HostapdConfFilePath}" },
                 EnvironmentFile = "-/etc/default/hostapd",
                 ExecStartPre = $"/sbin/iw dev %i interface add {virtualName}@%i type __ap",
                 ExecStart = $"/usr/sbin/hostapd -i {virtualName}@%i -P {hostapdPID} -B {HostapdConfFilePath}",
                 ExecStopPost = $"-/sbin/iw dev {virtualName}@%i del",
-                WantedBy = new[]
-                {
-                    "sys-subsystem-net-devices-%i.device"
-                },
+                WantedBy = new[] { "sys-subsystem-net-devices-%i.device" }
             };
         }
 
@@ -390,7 +388,7 @@ namespace RaspberryPi.Network
             }
         }
 
-        /// <inheritdoc/>
+        /// <inheritdoc />
         public IEnumerable<ConnectedAccessPointClient> GetConnectedClients(INetworkInterface iface)
         {
             if (iface == null)
@@ -411,9 +409,9 @@ namespace RaspberryPi.Network
 
                 var contentRegex = new Regex(@"\s*(?<PropertyName>.*):(\s*)(?<PropertyValue>.*)");
                 var matches = contentRegex.Matches(content).OfType<Match>();
-                
+
                 var connectedTime = RegexExtensions.ParseValue(matches, "connected time")
-                    ?? throw new InvalidOperationException("Connected time is missing.");
+                                    ?? throw new InvalidOperationException("Connected time is missing.");
                 var connectedTimeSpan = TimeSpan.FromSeconds(double.Parse(connectedTime.Replace(" seconds", "")));
 
                 clients.Add(new ConnectedAccessPointClient
@@ -423,7 +421,7 @@ namespace RaspberryPi.Network
                     TxBitrate = RegexExtensions.ParseValue(matches, "tx bitrate"),
                     Authorized = RegexExtensions.ParseValueYesNo(matches, "authorized"),
                     Authenticated = RegexExtensions.ParseValueYesNo(matches, "authenticated"),
-                    ConnectedTime = connectedTimeSpan, 
+                    ConnectedTime = connectedTimeSpan
                 });
             }
 

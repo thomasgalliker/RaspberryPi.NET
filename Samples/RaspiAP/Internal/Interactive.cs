@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace NuGetUtils.CLI.Internal
+﻿namespace NuGetUtils.CLI.Internal
 {
     /// <summary>
     /// Source: https://github.com/dotnet/command-line-api/issues/711

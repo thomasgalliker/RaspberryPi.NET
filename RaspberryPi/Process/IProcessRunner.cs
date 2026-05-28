@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace RaspberryPi.Process
+﻿namespace RaspberryPi.Process
 {
     public interface IProcessRunner
     {

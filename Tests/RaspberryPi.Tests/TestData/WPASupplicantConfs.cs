@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using RaspberryPi.Network;
-
-namespace RaspberryPi.Tests.TestData
+﻿namespace RaspberryPi.Tests.TestData
 {
     internal static class WPASupplicantConfs
     {

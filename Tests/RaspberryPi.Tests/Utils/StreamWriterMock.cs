@@ -1,9 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Text;
-using Moq;
-
-namespace RaspberryPi.Tests.Utils
+﻿namespace RaspberryPi.Tests.Utils
 {
     internal class StreamWriterMock : Mock<StreamWriter>
     {

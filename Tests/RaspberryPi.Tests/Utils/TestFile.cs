@@ -1,7 +1,4 @@
-﻿using System.IO;
-using RaspberryPi.Storage;
-
-namespace RaspberryPi.Tests.Utils
+﻿namespace RaspberryPi.Tests.Utils
 {
     public class TestFile : IFile
     {

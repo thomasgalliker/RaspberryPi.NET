@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace RaspberryPi.Services
+﻿namespace RaspberryPi.Services
 {
     public class LinuxServiceConfigurator : IServiceConfigurator
     {

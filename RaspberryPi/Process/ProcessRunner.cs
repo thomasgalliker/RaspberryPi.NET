@@ -1,9 +1,4 @@
-﻿using System.Diagnostics;
-using System.Threading;
-using Microsoft.Extensions.Logging;
-using SystemProcess = System.Diagnostics.Process;
-
-namespace RaspberryPi.Process
+﻿namespace RaspberryPi.Process
 {
     public class ProcessRunner : IProcessRunner
     {

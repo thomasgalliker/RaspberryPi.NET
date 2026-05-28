@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace RaspberryPi.Extensions
+﻿namespace RaspberryPi.Extensions
 {
     internal static class StreamExtensions
     {

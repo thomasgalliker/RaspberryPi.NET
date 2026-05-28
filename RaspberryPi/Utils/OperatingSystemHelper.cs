@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace RaspberryPi
+﻿namespace RaspberryPi
 {
     public static class OperatingSystemHelper
     {

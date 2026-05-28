@@ -1,7 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-
-namespace RaspberryPi.Internals.ResourceLoader.Exceptions
+﻿namespace RaspberryPi.Internals.ResourceLoader.Exceptions
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     public class ResourceNotFoundException : Exception

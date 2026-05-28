@@ -1,7 +1,4 @@
-﻿using System.Reflection;
-using RaspberryPi.Internals.ResourceLoader;
-
-namespace RaspberryPi.Network
+﻿namespace RaspberryPi.Network
 {
     internal static class Configurations
     {

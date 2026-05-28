@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace RaspberryPi.Network
+﻿namespace RaspberryPi.Network
 {
 
     /// TODO: Consider merging Interface with Interface class

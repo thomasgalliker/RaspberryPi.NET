@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace RaspberryPi
+﻿namespace RaspberryPi
 {
     public static class SharedCommands
     {

@@ -1,6 +1,4 @@
-﻿using UnitsNet;
-
-namespace RaspberryPi
+﻿namespace RaspberryPi
 {
     public class MemoryStatus
     {

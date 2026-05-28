@@ -1,9 +1,4 @@
-﻿using System;
-using AwesomeAssertions;
-using RaspberryPi.Process;
-using Xunit;
-
-namespace RaspberryPi.Tests.Process
+﻿namespace RaspberryPi.Tests.Process
 {
     public class CommandLineInvocationTests
     {

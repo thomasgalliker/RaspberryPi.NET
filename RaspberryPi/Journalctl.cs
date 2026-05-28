@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using SystemProcess = System.Diagnostics.Process;
-
-namespace RaspberryPi
+﻿namespace RaspberryPi
 {
     public class Journalctl : IJournalctl
     {

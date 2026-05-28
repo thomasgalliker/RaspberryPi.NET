@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-
-namespace RaspberryPi.Extensions
+﻿namespace RaspberryPi.Extensions
 {
     internal static class RegexExtensions
     {

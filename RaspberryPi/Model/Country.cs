@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace RaspberryPi
+﻿namespace RaspberryPi
 {
     /// <summary>
     ///     Representation of an ISO3166-1 Country

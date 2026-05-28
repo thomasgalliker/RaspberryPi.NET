@@ -1,7 +1,4 @@
-﻿using System.Threading;
-using Microsoft.Extensions.Logging;
-
-namespace RaspberryPi.Process
+﻿namespace RaspberryPi.Process
 {
     internal class NullProcessRunner : IProcessRunner
     {

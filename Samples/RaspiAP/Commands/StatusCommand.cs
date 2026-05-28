@@ -1,8 +1,5 @@
-﻿using System;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.CommandLine.Invocation;
-using System.Linq;
-using System.Threading.Tasks;
 using RaspberryPi.Network;
 
 namespace RaspiAP.Commands

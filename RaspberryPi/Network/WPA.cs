@@ -1,11 +1,4 @@
-﻿using System.Net.NetworkInformation;
-using System.Net.Sockets;
-using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
-using RaspberryPi.Internals;
-using RaspberryPi.Utils;
-
-namespace RaspberryPi.Network
+﻿namespace RaspberryPi.Network
 {
     /// <summary>
     /// Functions for WiFi network management via wpa_supplicant

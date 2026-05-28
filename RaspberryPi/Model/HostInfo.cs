@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace RaspberryPi
+﻿namespace RaspberryPi
 {
     [DebuggerDisplay("HostInfo: {this.Hostname}")]
     public class HostInfo

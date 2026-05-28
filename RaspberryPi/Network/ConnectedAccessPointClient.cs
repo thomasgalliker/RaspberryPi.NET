@@ -1,6 +1,4 @@
-﻿using System.Net.NetworkInformation;
-
-namespace RaspberryPi.Network
+﻿namespace RaspberryPi.Network
 {
     public class ConnectedAccessPointClient
     {

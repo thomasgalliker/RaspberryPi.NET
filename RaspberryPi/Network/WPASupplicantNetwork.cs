@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace RaspberryPi.Network
+﻿namespace RaspberryPi.Network
 {
     /// <summary>
     /// The network configuration of wpa_supplicant.conf.

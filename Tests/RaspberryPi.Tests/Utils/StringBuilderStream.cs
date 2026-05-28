@@ -1,9 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Text;
-using RaspberryPi.Extensions;
-
-namespace RaspberryPi.Tests.Utils
+﻿namespace RaspberryPi.Tests.Utils
 {
     // Provides a writeable stream to a StringBuilder
     // Initially based on code from Simple.Web (https://github.com/markrendle/Simple.Web)
